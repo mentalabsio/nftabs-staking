@@ -49,8 +49,12 @@ pub mod magicshards_staking {
         instructions::initialize_farmer::handler(ctx)
     }
 
-    pub fn stake<'info>(ctx: Context<'_, '_, '_, 'info, Stake<'info>>, amount: u64) -> Result<()> {
-        instructions::stake::handler(ctx, amount)
+    pub fn stake<'info>(
+        ctx: Context<'_, '_, '_, 'info, Stake<'info>>,
+        amount: u64,
+        level: u8,
+    ) -> Result<()> {
+        instructions::stake::handler(ctx, amount, level)
     }
 
     pub fn unstake<'info>(ctx: Context<'_, '_, '_, 'info, Unstake<'info>>) -> Result<()> {

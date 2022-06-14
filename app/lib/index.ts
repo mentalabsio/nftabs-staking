@@ -1,10 +1,5 @@
 import { BN, utils, web3 } from "@project-serum/anchor";
 import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  Token,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
-import {
   AccountMeta,
   Connection,
   PublicKey,
@@ -26,9 +21,6 @@ import {
   unstake,
 } from "./gen/instructions";
 import { debuffPair } from "./gen/instructions/debuffPair";
-import { StakeArgs } from "./gen/instructions/stake";
-import { WhitelistTypeKind } from "./gen/types";
-import { LockConfigFields } from "./gen/types/LockConfig";
 import {
   findWhitelistProofAddress,
   findFarmAddress,
@@ -38,90 +30,39 @@ import {
   findStakeReceiptAddress,
 } from "./pda";
 import { tryFindCreator } from "./utils";
-
-interface ICreateFarm {
-  authority: PublicKey;
-  rewardMint: PublicKey;
-}
-
-interface IAddToWhitelist {
-  farm: PublicKey;
-  creatorOrMint: PublicKey;
-  authority: PublicKey;
-  whitelistType: WhitelistTypeKind;
-  rewardRate: {
-    tokenAmount: BN;
-    intervalInSeconds: BN;
-  };
-}
-
-interface IRemoveFromWhitelist {
-  farm: PublicKey;
-  addressToRemove: PublicKey;
-  authority: PublicKey;
-}
-
-interface ICreateLocks {
-  lockConfigs: LockConfigFields[];
-  farm: PublicKey;
-  authority: PublicKey;
-}
-
-interface IFundReward {
-  amount: BN;
-  farm: PublicKey;
-  authority: PublicKey;
-}
-
-interface IAddManager {
-  farm: PublicKey;
-  newManagerAuthority: PublicKey;
-  farmAuthority: PublicKey;
-}
-
-interface IInitializeFarmer {
-  farm: PublicKey;
-  owner: PublicKey;
-}
-
-interface IStake {
-  farm: PublicKey;
-  mint: PublicKey;
-  lock: PublicKey;
-  args: StakeArgs;
-  owner: PublicKey;
-}
-
-interface IUnstake {
-  farm: PublicKey;
-  mint: PublicKey;
-  owner: PublicKey;
-}
-
-interface IBuffPair {
-  farm: PublicKey;
-  buffMint: PublicKey;
-  pair: [PublicKey, PublicKey];
-  authority: PublicKey;
-}
-
-interface IDebuffPair {
-  farm: PublicKey;
-  buffMint: PublicKey;
-  pair: [PublicKey, PublicKey];
-  authority: PublicKey;
-}
-
-interface IClaimRewards {
-  farm: PublicKey;
-  authority: PublicKey;
-}
+import {
+  TripMap,
+  ICreateFarm,
+  IAddManager,
+  ICreateLocks,
+  IAddToWhitelist,
+  IBuffPair,
+  IClaimRewards,
+  IDebuffPair,
+  IFundReward,
+  IInitializeFarmer,
+  IRemoveFromWhitelist,
+  IStake,
+  IUnstake,
+} from "./types";
 
 export const StakingProgram = (connection: Connection) => {
   const systemProgram = web3.SystemProgram.programId;
   const tokenProgram = utils.token.TOKEN_PROGRAM_ID;
   const associatedTokenProgram = utils.token.ASSOCIATED_PROGRAM_ID;
   const rent = SYSVAR_RENT_PUBKEY;
+
+  const tripMap: TripMap = {
+    None: 0,
+    Drip: 1,
+    Groovy: 1,
+    Geometric: 1,
+    Interdimensional: 1,
+    "2x": 2,
+    "3x": 3,
+    "4x": 4,
+    Nirvana: 5,
+  };
 
   const createCreateFarmInstruction = async ({
     rewardMint,
@@ -364,25 +305,28 @@ export const StakingProgram = (connection: Connection) => {
 
     const stakeReceipt = findStakeReceiptAddress({ farmer, mint });
 
-    const ix = stake(args, {
-      farm,
-      farmer,
+    const ix = stake(
+      { amount: args.amount, level: tripMap[args.tripEffect] },
+      {
+        farm,
+        farmer,
 
-      gemMint: mint,
-      whitelistProof,
-      farmerVault,
-      gemOwnerAta,
+        gemMint: mint,
+        whitelistProof,
+        farmerVault,
+        gemOwnerAta,
 
-      lock,
-      stakeReceipt,
+        lock,
+        stakeReceipt,
 
-      owner,
+        owner,
 
-      rent,
-      systemProgram,
-      tokenProgram,
-      associatedTokenProgram,
-    });
+        rent,
+        systemProgram,
+        tokenProgram,
+        associatedTokenProgram,
+      }
+    );
 
     foundMetadata && ix.keys.push(metadata);
 

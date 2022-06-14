@@ -26,6 +26,7 @@ pub struct Stake<'info> {
 
     pub gem_mint: Account<'info, Mint>,
 
+    #[account(has_one = farm)]
     pub whitelist_proof: Account<'info, WhitelistProof>,
 
     #[account(
@@ -84,7 +85,11 @@ impl Stake<'_> {
     }
 }
 
-pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Stake<'info>>, amount: u64) -> Result<()> {
+pub fn handler<'info>(
+    ctx: Context<'_, '_, '_, 'info, Stake<'info>>,
+    amount: u64,
+    level: u8,
+) -> Result<()> {
     let whitelist_proof = &ctx.accounts.whitelist_proof;
 
     WhitelistProof::validate(
@@ -96,7 +101,7 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Stake<'info>>, amount: u64
 
     if let WhitelistType::Buff = whitelist_proof.ty {
         msg!("Cannot stake a buff NFT.");
-        return Err(error!(StakingError::InvalidWhitelistType));
+        return err!(StakingError::InvalidWhitelistType);
     }
 
     // Lock the nft to the farmer account.
@@ -105,8 +110,10 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Stake<'info>>, amount: u64
     let now_ts = now_ts()?;
     let farm = &mut ctx.accounts.farm;
 
+    let decimals = 6;
+    let emission = level_emission(level, decimals)?;
     let factor = ctx.accounts.lock.bonus_factor;
-    let base_rate = amount * ctx.accounts.whitelist_proof.reward_rate;
+    let base_rate = amount * (ctx.accounts.whitelist_proof.reward_rate + emission);
     let reward_rate = calculate_reward_rate(base_rate, factor as u64)?;
 
     let stake_receipt = &mut ctx.accounts.stake_receipt;
@@ -140,7 +147,7 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Stake<'info>>, amount: u64
                 stake_receipt.amount = amount;
             }
             None => {
-                return Err(error!(StakingError::GemStillStaked));
+                return err!(StakingError::GemStillStaked);
             }
         }
     }
@@ -154,4 +161,24 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Stake<'info>>, amount: u64
         .increase_reward_rate(reward_rate as u64)?;
 
     Ok(())
+}
+
+fn tokens_per_second(amount: u64, decimals: u32) -> Result<u64> {
+    10_u64
+        .checked_pow(decimals)
+        .ok_or(StakingError::ArithmeticError)?
+        .checked_mul(amount)
+        .ok_or(StakingError::ArithmeticError)?
+        .checked_div(86_400)
+        .ok_or_else(|| error!(StakingError::ArithmeticError))
+}
+
+/// Converts a level to a reward_rate (tokens/sec).
+fn level_emission(level: u8, decimals: u32) -> Result<u64> {
+    let emissions = [0, 5, 11, 17, 24, 32];
+    let emission = emissions
+        .get(level as usize)
+        .ok_or(StakingError::InvalidTripEffect)?;
+
+    tokens_per_second(*emission, decimals)
 }

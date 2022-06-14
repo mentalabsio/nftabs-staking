@@ -25,13 +25,15 @@ import {
   StakeReceipt,
 } from "../app/lib/gen/accounts";
 import { GemStillStaked } from "../app/lib/gen/errors/custom";
-import { LockConfigFields, WhitelistType } from "../app/lib/gen/types";
+import { WhitelistType } from "../app/lib/gen/types";
+import { LockConfigFields } from "../app/lib/gen/types/LockConfig";
 import {
   findFarmAddress,
   findFarmerAddress,
   findStakeReceiptAddress,
   findWhitelistProofAddress,
 } from "../app/lib/pda";
+import {TripEffect} from "../app/lib/types";
 import { findFarmLocks, withParsedError } from "../app/lib/utils";
 
 const send = (
@@ -69,7 +71,7 @@ describe("staking-program", () => {
 
   // NFT that will be used as a buff.
   const buffCreator = new PublicKey(
-    "62vz2oMLFf6k4DcX23tA6hR4ixDGUVxqk4gJf7iCGiEx"
+    "J1E9xvBsE8gwfV8qXVxbQ6H2wfEEKjRaxS2ENiZm4h2D"
   );
 
   const buffMint = new PublicKey(
@@ -291,12 +293,14 @@ describe("staking-program", () => {
     const locks = await findFarmLocks(connection, farm);
     const lock = locks.find((lock) => lock.bonusFactor === 0);
 
+    const tripEffect: TripEffect = "None";
+
     const { ix } = await stakingClient.createStakeInstruction({
       farm,
       mint: nft,
       lock: lock.address,
       owner: userWallet.publicKey,
-      args: { amount: new BN(1) },
+      args: { amount: new BN(1), tripEffect },
     });
 
     await send(connection, [ix], [userWallet]);
@@ -335,7 +339,7 @@ describe("staking-program", () => {
       owner: userWallet.publicKey,
       mint: otherNft,
       lock: lock.address,
-      args: { amount: new BN(1) },
+      args: { amount: new BN(1), tripEffect: "None" },
     });
 
     const { ix } = await stakingClient.createBuffPairInstruction({
@@ -425,7 +429,7 @@ describe("staking-program", () => {
       mint: rewardMint,
       lock: lock.address,
       owner: userWallet.publicKey,
-      args: { amount: new BN(5e8) },
+      args: { amount: new BN(5e8), tripEffect: "None" },
     });
 
     await send(connection, [ix], [userWallet]);
@@ -451,7 +455,7 @@ describe("staking-program", () => {
         mint: rewardMint,
         lock: lock.address,
         owner: userWallet.publicKey,
-        args: { amount: new BN(5e8) },
+        args: { amount: new BN(5e8), tripEffect: "None" },
       });
 
       await send(connection, [ix], [userWallet]);

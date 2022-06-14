@@ -10,6 +10,7 @@ export type CustomError =
   | GemStillBuffed
   | InvalidWhitelistType
   | FactorMustBeGtZero
+  | InvalidTripEffect
   | ArithmeticError
 
 export class CooldownIsNotOver extends Error {
@@ -122,13 +123,23 @@ export class FactorMustBeGtZero extends Error {
   }
 }
 
-export class ArithmeticError extends Error {
+export class InvalidTripEffect extends Error {
   readonly code = 6011
+  readonly name = "InvalidTripEffect"
+  readonly msg = "Invalid trip effect. Values must be in range 1..5."
+
+  constructor() {
+    super("6011: Invalid trip effect. Values must be in range 1..5.")
+  }
+}
+
+export class ArithmeticError extends Error {
+  readonly code = 6012
   readonly name = "ArithmeticError"
   readonly msg = "An arithmetic error occurred."
 
   constructor() {
-    super("6011: An arithmetic error occurred.")
+    super("6012: An arithmetic error occurred.")
   }
 }
 
@@ -157,6 +168,8 @@ export function fromCode(code: number): CustomError | null {
     case 6010:
       return new FactorMustBeGtZero()
     case 6011:
+      return new InvalidTripEffect()
+    case 6012:
       return new ArithmeticError()
   }
 

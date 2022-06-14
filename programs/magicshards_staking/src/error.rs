@@ -35,6 +35,9 @@ pub enum StakingError {
     #[msg("Buff factor must be greater than 0.")]
     FactorMustBeGtZero,
 
+    #[msg("Invalid trip effect. Values must be in range 1..5.")]
+    InvalidTripEffect,
+
     #[msg("An arithmetic error occurred.")]
     ArithmeticError,
 }

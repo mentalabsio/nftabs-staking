@@ -33,22 +33,24 @@ impl StakeReceipt {
         require!(self.is_running(), StakingError::GemNotStaked);
         require_gt!(factor, 0_u64, StakingError::FactorMustBeGtZero);
 
-        match self.buff {
-            Some(_) => Err(error!(StakingError::GemAlreadyBuffed)),
-            None => {
-                self.buff = Some(Buff {
-                    key: buff_key,
-                    factor,
-                });
-                let previous_reward_rate = self.reward_rate;
-                let buffed = self
-                    .reward_rate
-                    .checked_mul(factor)
-                    .ok_or(StakingError::ArithmeticError)?;
-                self.reward_rate = buffed;
-                Ok(buffed - previous_reward_rate)
-            }
+        if self.buff.is_some() {
+            return err!(StakingError::GemAlreadyBuffed);
         }
+
+        self.buff.replace(Buff {
+            key: buff_key,
+            factor,
+        });
+
+        let previous_reward_rate = self.reward_rate;
+        let buffed = self
+            .reward_rate
+            .checked_mul(factor)
+            .ok_or(StakingError::ArithmeticError)?;
+
+        self.reward_rate = buffed;
+
+        Ok(buffed - previous_reward_rate)
     }
 
     pub fn try_debuff(&mut self) -> Result<u64> {
@@ -64,7 +66,7 @@ impl StakeReceipt {
                 self.reward_rate = debuffed;
                 Ok(previous_reward_rate - debuffed)
             }
-            None => Err(error!(StakingError::GemNotBuffed)),
+            None => err!(StakingError::GemNotBuffed),
         }
     }
 }
