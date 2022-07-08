@@ -14,7 +14,9 @@ import { LoadingIcon } from "@/components/icons/LoadingIcon"
 import { web3 } from "@project-serum/anchor"
 import NFTSelectInput from "@/components/NFTSelectInput/NFTSelectInput"
 export default function Home() {
-  const { walletNFTs, fetchNFTs } = useWalletNFTs()
+  const { walletNFTs, fetchNFTs } = useWalletNFTs([
+    "AFW3EJSbVep5uG643Qk7JLyRR2W5PVK39ECZrKBzkBP3",
+  ])
   const [selectedWalletItems, setSelectedWalletItems] = useState<NFT[]>([])
   const [selectedVaultItems, setSelectedVaultItems] = useState<NFT[]>([])
 
