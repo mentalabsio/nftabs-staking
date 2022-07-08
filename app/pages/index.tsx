@@ -2,15 +2,17 @@
 import Head from "next/head"
 
 import { Button, Flex, Heading, Text } from "@theme-ui/components"
-import { useMemo, useState } from "react"
+import { FormEvent, useMemo, useState } from "react"
 
 import Header from "@/components/Header/Header"
 import { NFTGallery } from "@/components/NFTGallery/NFTGallery"
 import CollectionItem from "@/components/NFTGallery/CollectionItem"
 import useWalletNFTs, { NFT } from "@/hooks/useWalletNFTs"
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs"
-import useStaking from "@/hooks/useStaking"
+import useStaking, { StakeReceiptWithMetadata } from "@/hooks/useStaking"
 import { LoadingIcon } from "@/components/icons/LoadingIcon"
+import { web3 } from "@project-serum/anchor"
+import NFTSelectInput from "@/components/NFTSelectInput/NFTSelectInput"
 export default function Home() {
   const { walletNFTs, fetchNFTs } = useWalletNFTs()
   const [selectedWalletItems, setSelectedWalletItems] = useState<NFT[]>([])
@@ -25,7 +27,35 @@ export default function Home() {
     feedbackStatus,
     unstakeAll,
     fetchReceipts,
+    buffPair,
+    debuffPair,
+    stakeFungibleTokens,
   } = useStaking()
+
+  const { walletNFTs: bufferNFTs, fetchNFTs: fetchBufferNFTs } = useWalletNFTs([
+    "Dg1Egxd7pUx8Ymwb3jpZvTMjHd4m1oX4vFAkygAQRBF7",
+  ])
+
+  const [isBuffFormOpen, setIsBuffFormOpen] = useState(false)
+
+  const handleBuffFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    const data = new FormData(e.currentTarget)
+
+    const toBuff = data.getAll("to_buff")
+    const buffer = data.get("buffer_mint")
+
+    await buffPair(
+      new web3.PublicKey(toBuff[0]),
+      new web3.PublicKey(toBuff[1]),
+      new web3.PublicKey(buffer)
+    )
+
+    await fetchNFTs()
+    await fetchReceipts()
+    await fetchBufferNFTs()
+  }
 
   /**
    * Handles selected items.
@@ -72,6 +102,34 @@ export default function Home() {
       )
     )
   }, [stakeReceipts])
+
+  const reducedReceipts: {
+    buffed: {
+      [key: string]: StakeReceiptWithMetadata[]
+    }
+    notBuffed: StakeReceiptWithMetadata[]
+  } = stakeReceipts?.reduce(
+    (acc, curr) => {
+      const buffer = curr.buff
+
+      if (!buffer) {
+        acc.notBuffed.push(curr)
+
+        return acc
+      }
+
+      const currentArray = acc.buffed[buffer?.key.toString()]
+
+      if (currentArray) {
+        currentArray.push(curr)
+      } else {
+        acc.buffed[buffer.key.toString()] = [curr]
+      }
+
+      return acc
+    },
+    { buffed: {}, notBuffed: [] }
+  )
 
   return (
     <>
@@ -350,59 +408,138 @@ export default function Home() {
                       Unstake selected
                     </Button>
                   </Flex>
+
                   <Flex
                     sx={{
                       flexDirection: "column",
-                      gap: "1.6rem",
-
-                      "@media (min-width: 768px)": {
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr 1fr 1fr",
-                      },
+                      gap: "3.2rem",
                     }}
                   >
-                    {orderedReceipts &&
-                      orderedReceipts.map((stake) => {
-                        const isSelected = selectedVaultItems.find(
-                          (NFT) =>
-                            NFT.onchainMetadata.mint ===
-                            stake.metadata.onchainMetadata.mint
-                        )
+                    <>
+                      <div
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: "1.6rem",
+                          alignItems: "center",
 
-                        return (
-                          <Flex
-                            sx={{
-                              flexDirection: "column",
-                              alignItems: "center",
-                              gap: "1.6rem",
-                            }}
-                          >
-                            <CollectionItem
-                              sx={{
-                                maxWidth: "16rem",
-                                "> img": {
-                                  border: "3px solid transparent",
-                                  borderColor: isSelected
-                                    ? "primary"
-                                    : "transparent",
-                                },
-                              }}
-                              onClick={handleVaultItemClick}
-                              item={stake.metadata}
-                            />
-                            {/* <Flex
-                                sx={{
-                                  gap: "1.6rem",
-                                  alignItems: "center",
-                                  flexDirection: "column",
-                                  marginTop: "1.6rem",
-                                }}
-                              >
-                                <Button variant="resetted">Unstake</Button>
-                              </Flex> */}
-                          </Flex>
-                        )
-                      })}
+                          "@media (min-width: 768px)": {
+                            gridTemplateColumns: "1fr 1fr 1fr 1fr",
+                          },
+                        }}
+                      >
+                        {reducedReceipts
+                          ? reducedReceipts.notBuffed.map((receipt) => {
+                              const isSelected = selectedVaultItems.find(
+                                (NFT) =>
+                                  NFT.onchainMetadata.mint ===
+                                  receipt.metadata.onchainMetadata.mint
+                              )
+
+                              return (
+                                <CollectionItem
+                                  item={receipt.metadata}
+                                  onClick={handleVaultItemClick}
+                                  sx={{
+                                    maxWidth: "16rem",
+                                    "> img": {
+                                      border: "3px solid transparent",
+                                      borderColor: isSelected
+                                        ? "primary"
+                                        : "transparent",
+                                    },
+                                  }}
+                                />
+                              )
+                            })
+                          : null}
+                      </div>
+                      {reducedReceipts
+                        ? Object.entries(reducedReceipts.buffed).map(
+                            ([key, value]) => {
+                              const nftA = value[0]
+                              const nftB = value[1]
+                              return (
+                                <Flex>
+                                  <CollectionItem
+                                    item={nftA.metadata}
+                                    sx={{
+                                      border: "1px solid",
+                                      borderColor: nftA.buff
+                                        ? "yellow"
+                                        : "transparent",
+                                    }}
+                                  />
+
+                                  <CollectionItem
+                                    item={nftB.metadata}
+                                    sx={{
+                                      border: "1px solid",
+                                      borderColor: nftB.buff
+                                        ? "yellow"
+                                        : "transparent",
+                                    }}
+                                  />
+                                  <Button
+                                    variant="secondary"
+                                    onClick={async () => {
+                                      await debuffPair(
+                                        nftA.mint,
+                                        nftB.mint,
+                                        new web3.PublicKey(key)
+                                      )
+                                      await fetchNFTs()
+                                      await fetchReceipts()
+                                      await fetchBufferNFTs()
+                                    }}
+                                  >
+                                    Debuff pair
+                                  </Button>
+                                </Flex>
+                              )
+                            }
+                          )
+                        : null}
+                    </>
+                    <Button
+                      sx={{
+                        alignSelf: "center",
+                        margin: "3.2rem 0",
+                      }}
+                      variant="secondary"
+                      onClick={() => setIsBuffFormOpen((prev) => !prev)}
+                    >
+                      Buff a pair!
+                    </Button>
+                    {isBuffFormOpen ? (
+                      <form
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "1.6rem",
+                          alignItems: "center",
+                        }}
+                        onSubmit={handleBuffFormSubmit}
+                      >
+                        Select NFT A:
+                        <NFTSelectInput
+                          NFTs={stakeReceipts?.map(
+                            (receipt) => receipt.metadata
+                          )}
+                          name="to_buff"
+                        />
+                        Select NFT A:
+                        <NFTSelectInput
+                          NFTs={stakeReceipts?.map(
+                            (receipt) => receipt.metadata
+                          )}
+                          name="to_buff"
+                        />
+                        Select Sunshine:
+                        <NFTSelectInput NFTs={bufferNFTs} name="buffer_mint" />
+                        <Button type="submit">Buff an NFT pair!</Button>
+                      </form>
+                    ) : null}
                   </Flex>
                 </TabPanel>
               </Tabs>

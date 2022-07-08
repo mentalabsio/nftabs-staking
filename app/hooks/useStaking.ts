@@ -287,6 +287,118 @@ const useStaking = () => {
     }
   }
 
+  const buffPair = async (
+    nftA: web3.PublicKey,
+    nftB: web3.PublicKey,
+    buffMint: web3.PublicKey
+  ) => {
+    const farm = findFarmAddress({
+      authority: farmAuthorityPubKey,
+      rewardMint,
+    })
+
+    const stakingClient = StakingProgram(connection)
+
+    const { ix } = await stakingClient.createBuffPairInstruction({
+      farm,
+      buffMint,
+      pair: [nftA, nftB],
+      authority: publicKey,
+    })
+
+    const tx = new Transaction()
+
+    tx.add(ix)
+    const latest = await connection.getLatestBlockhash()
+    tx.recentBlockhash = latest.blockhash
+    tx.feePayer = publicKey
+
+    setFeedbackStatus("Awaiting approval...")
+
+    const txid = await sendTransaction(tx, connection)
+
+    setFeedbackStatus("Confirming...")
+
+    await connection.confirmTransaction(txid)
+
+    setFeedbackStatus("Success!")
+  }
+
+  const debuffPair = async (
+    nftA: web3.PublicKey,
+    nftB: web3.PublicKey,
+    buffMint: web3.PublicKey
+  ) => {
+    const farm = findFarmAddress({
+      authority: farmAuthorityPubKey,
+      rewardMint,
+    })
+
+    const stakingClient = StakingProgram(connection)
+
+    const { ix } = await stakingClient.createDebuffPairInstruction({
+      farm,
+      buffMint,
+      pair: [nftA, nftB],
+      authority: publicKey,
+    })
+
+    const tx = new Transaction()
+
+    tx.add(ix)
+    const latest = await connection.getLatestBlockhash()
+    tx.recentBlockhash = latest.blockhash
+    tx.feePayer = publicKey
+
+    setFeedbackStatus("Awaiting approval...")
+
+    const txid = await sendTransaction(tx, connection)
+
+    setFeedbackStatus("Confirming...")
+
+    await connection.confirmTransaction(txid)
+
+    setFeedbackStatus("Success!")
+  }
+
+  const stakeFungibleTokens = async () => {
+    const farm = findFarmAddress({
+      authority: farmAuthorityPubKey,
+      rewardMint,
+    })
+
+    const locks = await findFarmLocks(connection, farm)
+    const lock = locks.find((lock) => lock.bonusFactor === 0)
+
+    const stakingClient = StakingProgram(connection)
+
+    // Stake 0.5 tokens
+    const { ix } = await stakingClient.createStakeInstruction({
+      farm,
+      mint: rewardMint,
+      lock: lock.address,
+      owner: publicKey,
+      args: { amount: new BN(5e8), tripEffect: "None" },
+    })
+
+    const tx = new Transaction()
+
+    tx.add(ix)
+    const latest = await connection.getLatestBlockhash()
+    tx.recentBlockhash = latest.blockhash
+    tx.feePayer = publicKey
+
+    setFeedbackStatus("Awaiting approval...")
+
+    const txid = await sendTransaction(tx, connection)
+
+    setFeedbackStatus("Confirming...")
+
+    await connection.confirmTransaction(txid)
+
+    setFeedbackStatus("Success!")
+  }
+
   return {
     farmerAccount,
     feedbackStatus,
@@ -296,6 +408,9 @@ const useStaking = () => {
     unstakeAll,
     stakeReceipts,
     fetchReceipts,
+    buffPair,
+    debuffPair,
+    stakeFungibleTokens,
   }
 }
 
