@@ -175,11 +175,28 @@ export default function Home() {
           minHeight: "60vh",
         }}
       >
-        <Heading mb=".8rem" variant="heading1">
-          Staking
+        <Heading
+          sx={{
+            position: "relative",
+            fontSize: "6.4rem",
+            lineHeight: 0.5,
+            fontFamily: "Funghetto, sans-serif",
+            marginTop: "3.2rem",
+          }}
+          mb=".8rem"
+          variant="heading1"
+        >
+          NFTabs
         </Heading>
-        <Text>Stake your NFTs now</Text>
-
+        <Text
+          sx={{
+            position: "relative",
+            fontSize: "3.2rem",
+            fontFamily: "Funghetto, sans-serif",
+          }}
+        >
+          Staking
+        </Text>
         {farmerAccount === false ? (
           <>
             <Button mt="3.2rem" onClick={initFarmer}>
@@ -568,7 +585,7 @@ export default function Home() {
           position: "relative",
         }}
       >
-        <a
+        {/* <a
           href="https://twitter.com/magicshards"
           target="_blank"
           rel="noopener noreferrer"
@@ -593,7 +610,7 @@ export default function Home() {
               height={32}
             />
           </Text>
-        </a>
+        </a> */}
       </footer>
     </>
   )
