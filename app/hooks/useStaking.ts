@@ -11,11 +11,11 @@ import { getNFTMetadata } from "utils/nfts"
 import { NFT } from "./useWalletNFTs"
 
 const farmAuthorityPubKey = new web3.PublicKey(
-  "7JFd6StCPAqyV2Cj4WG7rSJY3uWHSToW7dLesCvCHTBd"
+  "CaHtL5SGshzN79ikqBujaoj46rrkMTz7ibwWWmnA6oZA"
 )
 
 const rewardMint = new web3.PublicKey(
-  "6B9C2UiSco1op2CaFnxiomsXSDQGZwP5bCC5fx5M4ERw"
+  "4o73nxFVvdi1PdjUvhW72QH9QexT2MGK7kbmfRUc8XFm"
 )
 
 export type StakeReceiptWithMetadata = StakeReceipt & {
@@ -171,7 +171,19 @@ const useStaking = () => {
             mint,
             lock: lock.address,
             owner: publicKey,
-            args: { amount: new BN(1) },
+            /**
+             * export type TripEffect =
+              | "None"
+              | "Groovy"
+              | "Geometric"
+              | "Drip"
+              | "Interdimensional"
+              | "2x"
+              | "3x"
+              | "4x"
+              | "Nirvana";
+             */
+            args: { amount: new BN(1), tripEffect: "None" },
           })
 
           return ix
