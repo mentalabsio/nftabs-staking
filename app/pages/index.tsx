@@ -1,7 +1,7 @@
 /** @jsxImportSource theme-ui */
 import Head from "next/head"
 
-import { Button, Flex, Heading, Text } from "@theme-ui/components"
+import { Button, Flex, Heading, Label, Text } from "@theme-ui/components"
 import { FormEvent, useMemo, useState } from "react"
 
 import Header from "@/components/Header/Header"
@@ -13,13 +13,14 @@ import useStaking, { StakeReceiptWithMetadata } from "@/hooks/useStaking"
 import { LoadingIcon } from "@/components/icons/LoadingIcon"
 import { web3 } from "@project-serum/anchor"
 import NFTSelectInput from "@/components/NFTSelectInput/NFTSelectInput"
+import { PublicKey } from "@solana/web3.js"
 export default function Home() {
   const { walletNFTs, fetchNFTs } = useWalletNFTs([
     "AFW3EJSbVep5uG643Qk7JLyRR2W5PVK39ECZrKBzkBP3",
   ])
   const [selectedWalletItems, setSelectedWalletItems] = useState<NFT[]>([])
   const [selectedVaultItems, setSelectedVaultItems] = useState<NFT[]>([])
-
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const {
     farmerAccount,
     initFarmer,
@@ -35,29 +36,8 @@ export default function Home() {
   } = useStaking()
 
   const { walletNFTs: bufferNFTs, fetchNFTs: fetchBufferNFTs } = useWalletNFTs([
-    "Dg1Egxd7pUx8Ymwb3jpZvTMjHd4m1oX4vFAkygAQRBF7",
+    "9nqYaDVzYgmednWYGgkGVjNt19hjUN3ZfoA34peHK7rY",
   ])
-
-  const [isBuffFormOpen, setIsBuffFormOpen] = useState(false)
-
-  const handleBuffFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
-    const data = new FormData(e.currentTarget)
-
-    const toBuff = data.getAll("to_buff")
-    const buffer = data.get("buffer_mint")
-
-    await buffPair(
-      new web3.PublicKey(toBuff[0]),
-      new web3.PublicKey(toBuff[1]),
-      new web3.PublicKey(buffer)
-    )
-
-    await fetchNFTs()
-    await fetchReceipts()
-    await fetchBufferNFTs()
-  }
 
   /**
    * Handles selected items.
@@ -347,7 +327,14 @@ export default function Home() {
                       paddingBottom: ".8rem",
                     }}
                   >
-                    <Heading variant="heading2">Your wallet NFTs</Heading>
+                    <Flex
+                      sx={{
+                        flexDirection: "column",
+                      }}
+                    >
+                      <Heading variant="heading2">Your wallet NFTs</Heading>
+                      <Text>Select NFTs to stake:</Text>
+                    </Flex>
                     <Button
                       onClick={async (e) => {
                         const allMints = selectedWalletItems.map(
@@ -411,21 +398,47 @@ export default function Home() {
                       paddingBottom: ".8rem",
                     }}
                   >
-                    <Heading variant="heading2">Your vault NFTs</Heading>
-                    <Button
-                      onClick={async (e) => {
-                        const allMints = selectedVaultItems.map(
-                          (item) => item.mint
-                        )
-                        await unstakeAll(allMints)
-                        await fetchNFTs()
-                        await fetchReceipts()
-                        setSelectedVaultItems([])
+                    <Flex
+                      sx={{
+                        flexDirection: "column",
                       }}
-                      disabled={!selectedVaultItems.length}
                     >
-                      Unstake selected
-                    </Button>
+                      <Heading variant="heading2">Your vault NFTs</Heading>
+                      <Text>Select NFTs to buff or withdraw</Text>
+                    </Flex>
+
+                    <Flex
+                      sx={{
+                        gap: ".8rem",
+                      }}
+                    >
+                      <Button
+                        onClick={async (e) => {
+                          setIsModalOpen(true)
+                        }}
+                        type="submit"
+                        disabled={
+                          !selectedVaultItems.length ||
+                          selectedVaultItems.length !== 2
+                        }
+                      >
+                        Buff selected
+                      </Button>
+                      <Button
+                        onClick={async (e) => {
+                          const allMints = selectedVaultItems.map(
+                            (item) => item.mint
+                          )
+                          await unstakeAll(allMints)
+                          await fetchNFTs()
+                          await fetchReceipts()
+                          setSelectedVaultItems([])
+                        }}
+                        disabled={!selectedVaultItems.length}
+                      >
+                        Unstake selected
+                      </Button>
+                    </Flex>
                   </Flex>
 
                   <Flex
@@ -478,87 +491,143 @@ export default function Home() {
                             ([key, value]) => {
                               const nftA = value[0]
                               const nftB = value[1]
-                              return (
-                                <Flex>
-                                  <CollectionItem
-                                    item={nftA.metadata}
-                                    sx={{
-                                      border: "1px solid",
-                                      borderColor: nftA.buff
-                                        ? "yellow"
-                                        : "transparent",
-                                    }}
-                                  />
 
-                                  <CollectionItem
-                                    item={nftB.metadata}
+                              return (
+                                <Flex
+                                  sx={{
+                                    padding: "1.6rem",
+                                    alignSelf: "flex-start",
+                                    flexDirection: "column",
+                                    background: (props) =>
+                                      props.colors.primaryGradient,
+
+                                    borderRadius: ".4rem",
+                                    alignItems: "center",
+                                    gap: "1.6rem",
+                                    span: {
+                                      color: "background",
+                                    },
+
+                                    "@media (min-width: 768px)": {
+                                      flexDirection: "row",
+                                    },
+                                  }}
+                                >
+                                  <Flex>
+                                    <CollectionItem item={nftA.metadata} />
+
+                                    <CollectionItem item={nftB.metadata} />
+                                  </Flex>
+                                  <Flex
                                     sx={{
-                                      border: "1px solid",
-                                      borderColor: nftB.buff
-                                        ? "yellow"
-                                        : "transparent",
-                                    }}
-                                  />
-                                  <Button
-                                    variant="secondary"
-                                    onClick={async () => {
-                                      await debuffPair(
-                                        nftA.mint,
-                                        nftB.mint,
-                                        new web3.PublicKey(key)
-                                      )
-                                      await fetchNFTs()
-                                      await fetchReceipts()
-                                      await fetchBufferNFTs()
+                                      flexDirection: "column",
                                     }}
                                   >
-                                    Debuff pair
-                                  </Button>
+                                    {/* <Text>Double emission activated</Text> */}
+                                    <Button
+                                      sx={{
+                                        alignSelf: "center",
+                                        justifySelf: "center",
+                                      }}
+                                      variant="secondary"
+                                      onClick={async () => {
+                                        await debuffPair(
+                                          nftA.mint,
+                                          nftB.mint,
+                                          new web3.PublicKey(key)
+                                        )
+                                        await fetchNFTs()
+                                        await fetchReceipts()
+                                        await fetchBufferNFTs()
+                                      }}
+                                    >
+                                      Debuff
+                                    </Button>
+                                  </Flex>
                                 </Flex>
                               )
                             }
                           )
                         : null}
-                    </>
-                    <Button
-                      sx={{
-                        alignSelf: "center",
-                        margin: "3.2rem 0",
-                      }}
-                      variant="secondary"
-                      onClick={() => setIsBuffFormOpen((prev) => !prev)}
-                    >
-                      Buff a pair!
-                    </Button>
-                    {isBuffFormOpen ? (
-                      <form
+                      <div
                         sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "1.6rem",
-                          alignItems: "center",
+                          position: "fixed",
+                          margin: "0 auto",
+                          backgroundColor: "background",
+                          visibility: isModalOpen ? "visible" : "hidden",
+                          opacity: isModalOpen ? 1 : 0,
+                          left: 0,
+                          right: 0,
+                          top: "16rem",
+                          zIndex: 999,
+                          maxWidth: "48rem",
+                          padding: "3.2rem",
+                          boxShadow: "0px 4px 4px rgba(0,0,0,0.25)",
                         }}
-                        onSubmit={handleBuffFormSubmit}
                       >
-                        Select NFT A:
-                        <NFTSelectInput
-                          NFTs={stakeReceipts?.map(
-                            (receipt) => receipt.metadata
-                          )}
-                          name="to_buff"
-                        />
-                        Select NFT A:
-                        <NFTSelectInput
-                          NFTs={stakeReceipts?.map(
-                            (receipt) => receipt.metadata
-                          )}
-                          name="to_buff"
-                        />
-                        Select Sunshine:
-                        <NFTSelectInput NFTs={bufferNFTs} name="buffer_mint" />
-                        <Button type="submit">Buff an NFT pair!</Button>
-                      </form>
-                    ) : null}
+                        <form
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "1.6rem",
+                            alignItems: "center",
+                          }}
+                          onSubmit={async (e) => {
+                            e.preventDefault()
+
+                            const data = new FormData(e.currentTarget)
+
+                            const buffer = new web3.PublicKey(
+                              data.get("buffer_mint")
+                            )
+
+                            const allMints = selectedVaultItems.map(
+                              (item) => item.mint
+                            )
+
+                            await buffPair(allMints[0], allMints[1], buffer)
+
+                            await fetchNFTs()
+                            await fetchReceipts()
+
+                            setSelectedVaultItems([])
+                            setIsModalOpen(false)
+                          }}
+                        >
+                          <Label
+                            sx={{
+                              flexDirection: "column",
+                              gap: ".4rem",
+                            }}
+                          >
+                            Select Sunshine:
+                            <NFTSelectInput
+                              NFTs={bufferNFTs}
+                              name="buffer_mint"
+                              label="Select a Sunshine Tab"
+                            />
+                          </Label>
+                          <Button type="submit">Buff!</Button>
+                        </form>
+                      </div>
+                      <div
+                        onClick={() => setIsModalOpen(false)}
+                        sx={{
+                          "::before": {
+                            content: "''",
+                            position: "fixed",
+                            backgroundColor: "background",
+                            visibility: isModalOpen ? "visible" : "hidden",
+                            opacity: isModalOpen ? 0.5 : 0,
+                            zIndex: 998,
+                            top: 0,
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                          },
+                        }}
+                      ></div>
+                    </>
                   </Flex>
                 </TabPanel>
               </Tabs>
