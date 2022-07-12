@@ -14,7 +14,6 @@ import { LoadingIcon } from "@/components/icons/LoadingIcon"
 import { web3 } from "@project-serum/anchor"
 import NFTSelectInput from "@/components/NFTSelectInput/NFTSelectInput"
 import { PublicKey } from "@solana/web3.js"
-import Link from "next/link"
 export default function Home() {
   const { walletNFTs, fetchNFTs } = useWalletNFTs([
     "AFW3EJSbVep5uG643Qk7JLyRR2W5PVK39ECZrKBzkBP3",
@@ -169,7 +168,7 @@ export default function Home() {
           mb=".8rem"
           variant="heading1"
         >
-          NFTabs
+          Stake Your
         </Heading>
         <Text
           sx={{
@@ -178,21 +177,96 @@ export default function Home() {
             fontFamily: "Funghetto, sans-serif",
           }}
         >
-          Staking
+          $SUNSHINE tokens
         </Text>
-        <Flex
-          sx={{
-            marginTop: "3.2rem",
-            gap: "1.6rem",
-          }}
-        >
-          <Link href="/nfts">
-            <Button variant="secondary">Stake NFTs</Button>
-          </Link>
-          <Link href="/sunshine">
-            <Button variant="secondary">Stake $SUNSHINE</Button>
-          </Link>
-        </Flex>
+        {farmerAccount === false ? (
+          <>
+            <Button mt="3.2rem" onClick={initFarmer}>
+              Init account
+            </Button>
+            <Flex
+              sx={{
+                alignItems: "center",
+                gap: ".8rem",
+                margin: ".8rem 0",
+              }}
+            >
+              {feedbackStatus ? (
+                <>
+                  {feedbackStatus.indexOf("Success") === -1 ? (
+                    <LoadingIcon size="1.6rem" />
+                  ) : null}
+                  {"  "}{" "}
+                  <Text
+                    variant="small"
+                    sx={{
+                      color:
+                        feedbackStatus.indexOf("Success") !== -1
+                          ? "success"
+                          : "text",
+                    }}
+                  >
+                    {feedbackStatus}
+                  </Text>
+                </>
+              ) : (
+                ""
+              )}
+              &nbsp;
+            </Flex>
+          </>
+        ) : null}
+
+        {farmerAccount ? (
+          <>
+            <Flex
+              my="3.2rem"
+              sx={{
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "1.6rem",
+              }}
+            >
+              <Flex
+                sx={{
+                  gap: "1.6rem",
+                }}
+              ></Flex>
+              <Button onClick={claim}>Claim rewards</Button>
+
+              <Flex
+                sx={{
+                  alignItems: "center",
+                  gap: ".8rem",
+                  margin: ".8rem 0",
+                }}
+              >
+                {feedbackStatus ? (
+                  <>
+                    {feedbackStatus.indexOf("Success") === -1 ? (
+                      <LoadingIcon size="1.6rem" />
+                    ) : null}
+                    {"  "}{" "}
+                    <Text
+                      variant="small"
+                      sx={{
+                        color:
+                          feedbackStatus.indexOf("Success") !== -1
+                            ? "success"
+                            : "text",
+                      }}
+                    >
+                      {feedbackStatus}
+                    </Text>
+                  </>
+                ) : (
+                  ""
+                )}
+                &nbsp;
+              </Flex>
+            </Flex>
+          </>
+        ) : null}
       </main>
 
       <footer

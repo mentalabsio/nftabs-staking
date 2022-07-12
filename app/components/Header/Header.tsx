@@ -1,13 +1,13 @@
 /** @jsxImportSource theme-ui */
-import Link from "next/link";
-import { Button, Container, Flex, Text } from "@theme-ui/components";
+import Link from "next/link"
+import { Button, Container, Flex, Text } from "@theme-ui/components"
 
-import WalletManager from "@/components/WalletManager/WalletManager";
-import { useState } from "react";
-import { CloseIcon, MenuIcon } from "../icons";
+import WalletManager from "@/components/WalletManager/WalletManager"
+import { useState } from "react"
+import { CloseIcon, MenuIcon } from "../icons"
 
 const Header = () => {
-  const [isMobileMenuActive, setIsMobileMenuActive] = useState(false);
+  const [isMobileMenuActive, setIsMobileMenuActive] = useState(false)
 
   return (
     <Flex
@@ -47,7 +47,20 @@ const Header = () => {
                   }}
                   src="https://uploads-ssl.webflow.com/61b843f68cc9ce09b38de69f/61b878c9fc12b52c77cea8eb_nav-logo.png"
                 />
+                <Text
+                  sx={{
+                    position: "relative",
+                    fontSize: "2.4rem",
+                    marginTop: ".6rem",
+                    marginLeft: ".4rem",
+                    fontFamily: "Funghetto, sans-serif",
+                    color: "background",
+                  }}
+                >
+                  Staking
+                </Text>
               </Flex>
+
               {/* <Flex sx={{ alignItems: "center" }}>Staking</Flex> */}
             </Flex>
           </Link>
@@ -133,7 +146,7 @@ const Header = () => {
         </Flex>
       </Container>
     </Flex>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header
