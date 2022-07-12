@@ -14,6 +14,7 @@ import { LoadingIcon } from "@/components/icons/LoadingIcon"
 import { web3 } from "@project-serum/anchor"
 import NFTSelectInput from "@/components/NFTSelectInput/NFTSelectInput"
 import { PublicKey } from "@solana/web3.js"
+import { useWallet } from "@solana/wallet-adapter-react"
 export default function Home() {
   const { walletNFTs, fetchNFTs } = useWalletNFTs([
     "AFW3EJSbVep5uG643Qk7JLyRR2W5PVK39ECZrKBzkBP3",
@@ -38,6 +39,7 @@ export default function Home() {
   const { walletNFTs: bufferNFTs, fetchNFTs: fetchBufferNFTs } = useWalletNFTs([
     "9nqYaDVzYgmednWYGgkGVjNt19hjUN3ZfoA34peHK7rY",
   ])
+  const { publicKey } = useWallet()
 
   /**
    * Handles selected items.
@@ -179,6 +181,10 @@ export default function Home() {
         >
           Tripped Out NFTs
         </Text>
+
+        {!publicKey ? (
+          <Text my="3.2rem">Connect your wallet first.</Text>
+        ) : null}
         {farmerAccount === false ? (
           <>
             <Button mt="3.2rem" onClick={initFarmer}>
