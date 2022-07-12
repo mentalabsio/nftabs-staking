@@ -608,6 +608,36 @@ export default function Home() {
                             />
                           </Label>
                           <Button type="submit">Buff!</Button>
+                          <Flex
+                            sx={{
+                              alignItems: "center",
+                              gap: ".8rem",
+                              margin: ".8rem 0",
+                            }}
+                          >
+                            {feedbackStatus ? (
+                              <>
+                                {feedbackStatus.indexOf("Success") === -1 ? (
+                                  <LoadingIcon size="1.6rem" />
+                                ) : null}
+                                {"  "}{" "}
+                                <Text
+                                  variant="small"
+                                  sx={{
+                                    color:
+                                      feedbackStatus.indexOf("Success") !== -1
+                                        ? "success"
+                                        : "text",
+                                  }}
+                                >
+                                  {feedbackStatus}
+                                </Text>
+                              </>
+                            ) : (
+                              ""
+                            )}
+                            &nbsp;
+                          </Flex>
                         </form>
                       </div>
                       <div
