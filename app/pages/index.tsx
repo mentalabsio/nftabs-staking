@@ -183,14 +183,62 @@ export default function Home() {
         <Flex
           sx={{
             marginTop: "3.2rem",
-            gap: "1.6rem",
+            gap: "4.8rem",
+            flexDirection: "column",
+            alignItems: "center",
+
+            "@media (min-width: 768px)": {
+              flexDirection: "row",
+            },
           }}
         >
           <Link href="/nfts">
-            <Button variant="secondary">Stake NFTs</Button>
+            <a>
+              <Flex
+                sx={{
+                  flexDirection: "column",
+                  minHeight: "16rem",
+                  gap: "1.6rem",
+                  alignItems: "center",
+                }}
+              >
+                <img
+                  sx={{
+                    maxWidth: "16rem",
+                    borderRadius: ".4rem",
+                  }}
+                  src="/tripped_out.webp"
+                />
+                <Heading variant="heading3">Stake NFTs</Heading>
+              </Flex>
+            </a>
           </Link>
           <Link href="/sunshine">
-            <Button variant="secondary">Stake $SUNSHINE</Button>
+            <a>
+              <Flex
+                sx={{
+                  flexDirection: "column",
+                  minHeight: "16rem",
+                  gap: "1.6rem",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  sx={{
+                    minHeight: "16rem",
+                  }}
+                >
+                  <img
+                    sx={{
+                      maxWidth: "16rem",
+                    }}
+                    src="/sunshine.png"
+                  />
+                </div>
+
+                <Heading variant="heading3">Stake $SUNSHINE</Heading>
+              </Flex>
+            </a>
           </Link>
         </Flex>
       </main>
