@@ -78,14 +78,27 @@ export default function Home() {
     })
   }
 
-  const orderedReceipts = useMemo(() => {
+  const orderedNFTs = useMemo(
+    () =>
+      walletNFTs &&
+      walletNFTs.sort((a, b) =>
+        a.externalMetadata.name.localeCompare(b.externalMetadata.name)
+      ),
+    [walletNFTs]
+  )
+
+  const filteredNFTs = useMemo(() => {
     return (
-      stakeReceipts &&
-      stakeReceipts.sort((a, b) =>
-        a.startTs.toNumber() < b.startTs.toNumber() ? 1 : -1
-      )
+      orderedNFTs &&
+      orderedNFTs.filter((NFT) => {
+        const tripStatusAttribute = NFT.externalMetadata.attributes.find(
+          (attribute) => attribute.trait_type === "Trip Status"
+        )
+
+        return tripStatusAttribute.value === "Tripped out NFT"
+      })
     )
-  }, [stakeReceipts])
+  }, [orderedNFTs])
 
   const reducedReceipts: {
     buffed: {
@@ -343,10 +356,7 @@ export default function Home() {
                     </Flex>
                     <Button
                       onClick={async (e) => {
-                        const allMints = selectedWalletItems.map(
-                          (item) => item.mint
-                        )
-                        await stakeAll(allMints)
+                        await stakeAll(selectedWalletItems)
                         await fetchNFTs()
                         await fetchReceipts()
                         setSelectedWalletItems([])
@@ -357,9 +367,9 @@ export default function Home() {
                     </Button>
                   </Flex>
 
-                  <NFTGallery NFTs={walletNFTs}>
+                  <NFTGallery NFTs={filteredNFTs}>
                     <>
-                      {walletNFTs?.map((item) => {
+                      {filteredNFTs?.map((item) => {
                         const isSelected = selectedWalletItems.find(
                           (NFT) =>
                             NFT.onchainMetadata.mint ===

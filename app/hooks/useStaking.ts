@@ -150,7 +150,7 @@ const useStaking = () => {
     }
   }
 
-  const stakeAll = async (mints: web3.PublicKey[]) => {
+  const stakeAll = async (NFTs: NFT[]) => {
     try {
       const farm = findFarmAddress({
         authority: farmAuthorityPubKey,
@@ -165,7 +165,31 @@ const useStaking = () => {
 
       let additionals = []
       const ixs = await Promise.all(
-        mints.map(async (mint) => {
+        NFTs.map(async (NFT) => {
+          const {
+            mint,
+            externalMetadata: { attributes },
+          } = NFT
+
+          const tripEffect = attributes.find((attribute) => {
+            return attribute.trait_type === "Trip Effect"
+          })
+
+          if (!tripEffect) {
+            throw new Error("Can't stake. There is no Trip Effect attribute.")
+          }
+
+          const isTrippedOut = attributes.find((attribute) => {
+            return (
+              attribute.trait_type === "Trip Status" &&
+              attribute.value === "Tripped out NFT"
+            )
+          })
+
+          if (!isTrippedOut) {
+            throw new Error("Can't stake. NFT is NOT Tripped Out.")
+          }
+
           const { ix } = await stakingClient.createStakeInstruction({
             farm,
             mint,
@@ -183,7 +207,7 @@ const useStaking = () => {
               | "4x"
               | "Nirvana";
              */
-            args: { amount: new BN(1), tripEffect: "None" },
+            args: { amount: new BN(1), tripEffect },
           })
 
           return ix
