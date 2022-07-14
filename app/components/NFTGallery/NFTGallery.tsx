@@ -42,7 +42,7 @@ export function NFTGallery({ NFTs, children }: NFTCollectionProps) {
               alignSelf: "stretch",
             }}
           >
-            <Text>There are no NFTs on your wallet.</Text>
+            <Text>There are no Tripped Out NFTs on your wallet.</Text>
           </Flex>
         )
       ) : /** No NFTs and public key, means it is loading */

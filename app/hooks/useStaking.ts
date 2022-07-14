@@ -10,11 +10,11 @@ import { findFarmLocks, findUserStakeReceipts } from "lib/utils"
 import { getNFTMetadata } from "utils/nfts"
 import { NFT } from "./useWalletNFTs"
 
-const farmAuthorityPubKey = new web3.PublicKey(
+export const farmAuthorityPubKey = new web3.PublicKey(
   "3hBWdLsxogSitaU7q2xzCtWvDVcA7G63HomM2zU3Tjo3"
 )
 
-const rewardMint = new web3.PublicKey(
+export const rewardMint = new web3.PublicKey(
   "5uL9BnKwT4FdysAS3hH9kJuE8bXvjyQ73LrER8mbY89H"
 )
 
@@ -385,44 +385,6 @@ const useStaking = () => {
     setFeedbackStatus("Success!")
   }
 
-  const stakeFungibleTokens = async () => {
-    const farm = findFarmAddress({
-      authority: farmAuthorityPubKey,
-      rewardMint,
-    })
-
-    const locks = await findFarmLocks(connection, farm)
-    const lock = locks.find((lock) => lock.bonusFactor === 0)
-
-    const stakingClient = StakingProgram(connection)
-
-    // Stake 0.5 tokens
-    const { ix } = await stakingClient.createStakeInstruction({
-      farm,
-      mint: rewardMint,
-      lock: lock.address,
-      owner: publicKey,
-      args: { amount: new BN(5e8), tripEffect: "None" },
-    })
-
-    const tx = new Transaction()
-
-    tx.add(ix)
-    const latest = await connection.getLatestBlockhash()
-    tx.recentBlockhash = latest.blockhash
-    tx.feePayer = publicKey
-
-    setFeedbackStatus("Awaiting approval...")
-
-    const txid = await sendTransaction(tx, connection)
-
-    setFeedbackStatus("Confirming...")
-
-    await connection.confirmTransaction(txid)
-
-    setFeedbackStatus("Success!")
-  }
-
   return {
     farmerAccount,
     feedbackStatus,
@@ -434,7 +396,6 @@ const useStaking = () => {
     fetchReceipts,
     buffPair,
     debuffPair,
-    stakeFungibleTokens,
   }
 }
 
