@@ -9,6 +9,8 @@ import { findFarmAddress, findFarmerAddress } from "lib/pda"
 import { findFarmLocks, findUserStakeReceipts } from "lib/utils"
 import { getNFTMetadata } from "utils/nfts"
 import { NFT } from "./useWalletNFTs"
+import { Lock } from "lib/gen/accounts/Lock"
+import { fromTxError } from "lib/gen/errors"
 
 export const farmAuthorityPubKey = new web3.PublicKey(
   "3hBWdLsxogSitaU7q2xzCtWvDVcA7G63HomM2zU3Tjo3"
@@ -22,6 +24,8 @@ export type StakeReceiptWithMetadata = StakeReceipt & {
   metadata: NFT
 }
 
+export type LockAccount = Lock & { address: web3.PublicKey }
+
 const useStaking = () => {
   const { connection } = useConnection()
   const { publicKey, sendTransaction } = useWallet()
@@ -29,6 +33,7 @@ const useStaking = () => {
   const [farmerAccount, setFarmerAccount] = useState<Farmer | false | null>(
     null
   )
+  const [farmLocks, setFarmLocks] = useState<LockAccount[]>(null)
 
   const [stakeReceipts, setStakeReceipts] = useState<
     StakeReceiptWithMetadata[] | null
@@ -86,6 +91,26 @@ const useStaking = () => {
     }
   }, [publicKey])
 
+  const fetchLocks = useCallback(async () => {
+    if (publicKey) {
+      const farm = findFarmAddress({
+        authority: farmAuthorityPubKey,
+        rewardMint,
+      })
+
+      try {
+        setFeedbackStatus("Fecthing locks...")
+        const locks = await findFarmLocks(connection, farm)
+
+        setFarmLocks(locks)
+      } catch (e) {
+        setFeedbackStatus(
+          "Something went wrong. " + (e.message ? e.message : e)
+        )
+      }
+    }
+  }, [publicKey])
+
   /**
    * Fetch farmer account
    */
@@ -116,6 +141,7 @@ const useStaking = () => {
   useEffect(() => {
     if (publicKey) {
       fetchFarmer()
+      fetchLocks()
       fetchReceipts()
     }
   }, [publicKey])
@@ -152,11 +178,15 @@ const useStaking = () => {
 
       await fetchFarmer()
     } catch (e) {
-      setFeedbackStatus("Something went wrong. " + (e.message ? e.message : e))
+      const message = fromTxError(e)
+
+      setFeedbackStatus(
+        "Something went wrong. " + (message ? message : e.message || e)
+      )
     }
   }
 
-  const stakeAll = async (NFTs: NFT[]) => {
+  const stakeAll = async (NFTs: NFT[], lock: LockAccount) => {
     try {
       const farm = findFarmAddress({
         authority: farmAuthorityPubKey,
@@ -164,8 +194,6 @@ const useStaking = () => {
       })
 
       setFeedbackStatus("Initializing...")
-      const locks = await findFarmLocks(connection, farm)
-      const lock = locks.find((lock) => lock.bonusFactor === 0)
 
       const stakingClient = StakingProgram(connection)
 
@@ -236,7 +264,11 @@ const useStaking = () => {
 
       console.log(txid)
     } catch (e) {
-      setFeedbackStatus("Something went wrong. " + (e.message ? e.message : e))
+      const message = fromTxError(e)
+
+      setFeedbackStatus(
+        "Something went wrong. " + (message ? message : e.message || e)
+      )
     }
   }
 
@@ -278,7 +310,11 @@ const useStaking = () => {
 
       await connection.confirmTransaction(txid)
     } catch (e) {
-      setFeedbackStatus("Something went wrong. " + (e.message ? e.message : e))
+      const message = fromTxError(e)
+
+      setFeedbackStatus(
+        "Something went wrong. " + (message ? message : e.message || e)
+      )
     }
   }
 
@@ -313,7 +349,11 @@ const useStaking = () => {
 
       setFeedbackStatus("Success!")
     } catch (e) {
-      setFeedbackStatus("Something went wrong. " + (e.message ? e.message : e))
+      const message = fromTxError(e)
+
+      setFeedbackStatus(
+        "Something went wrong. " + (message ? message : e.message || e)
+      )
     }
   }
 
@@ -322,36 +362,44 @@ const useStaking = () => {
     nftB: web3.PublicKey,
     buffMint: web3.PublicKey
   ) => {
-    const farm = findFarmAddress({
-      authority: farmAuthorityPubKey,
-      rewardMint,
-    })
+    try {
+      const farm = findFarmAddress({
+        authority: farmAuthorityPubKey,
+        rewardMint,
+      })
 
-    const stakingClient = StakingProgram(connection)
+      const stakingClient = StakingProgram(connection)
 
-    const { ix } = await stakingClient.createBuffPairInstruction({
-      farm,
-      buffMint,
-      pair: [nftA, nftB],
-      authority: publicKey,
-    })
+      const { ix } = await stakingClient.createBuffPairInstruction({
+        farm,
+        buffMint,
+        pair: [nftA, nftB],
+        authority: publicKey,
+      })
 
-    const tx = new Transaction()
+      const tx = new Transaction()
 
-    tx.add(ix)
-    const latest = await connection.getLatestBlockhash()
-    tx.recentBlockhash = latest.blockhash
-    tx.feePayer = publicKey
+      tx.add(ix)
+      const latest = await connection.getLatestBlockhash()
+      tx.recentBlockhash = latest.blockhash
+      tx.feePayer = publicKey
 
-    setFeedbackStatus("Awaiting approval...")
+      setFeedbackStatus("Awaiting approval...")
 
-    const txid = await sendTransaction(tx, connection)
+      const txid = await sendTransaction(tx, connection)
 
-    setFeedbackStatus("Confirming...")
+      setFeedbackStatus("Confirming...")
 
-    await connection.confirmTransaction(txid)
+      await connection.confirmTransaction(txid)
 
-    setFeedbackStatus("Success!")
+      setFeedbackStatus("Success!")
+    } catch (e) {
+      const message = fromTxError(e)
+
+      setFeedbackStatus(
+        "Something went wrong. " + (message ? message : e.message || e)
+      )
+    }
   }
 
   const debuffPair = async (
@@ -359,41 +407,50 @@ const useStaking = () => {
     nftB: web3.PublicKey,
     buffMint: web3.PublicKey
   ) => {
-    const farm = findFarmAddress({
-      authority: farmAuthorityPubKey,
-      rewardMint,
-    })
+    try {
+      const farm = findFarmAddress({
+        authority: farmAuthorityPubKey,
+        rewardMint,
+      })
 
-    const stakingClient = StakingProgram(connection)
+      const stakingClient = StakingProgram(connection)
 
-    const { ix } = await stakingClient.createDebuffPairInstruction({
-      farm,
-      buffMint,
-      pair: [nftA, nftB],
-      authority: publicKey,
-    })
+      const { ix } = await stakingClient.createDebuffPairInstruction({
+        farm,
+        buffMint,
+        pair: [nftA, nftB],
+        authority: publicKey,
+      })
 
-    const tx = new Transaction()
+      const tx = new Transaction()
 
-    tx.add(ix)
-    const latest = await connection.getLatestBlockhash()
-    tx.recentBlockhash = latest.blockhash
-    tx.feePayer = publicKey
+      tx.add(ix)
+      const latest = await connection.getLatestBlockhash()
+      tx.recentBlockhash = latest.blockhash
+      tx.feePayer = publicKey
 
-    setFeedbackStatus("Awaiting approval...")
+      setFeedbackStatus("Awaiting approval...")
 
-    const txid = await sendTransaction(tx, connection)
+      const txid = await sendTransaction(tx, connection)
 
-    setFeedbackStatus("Confirming...")
+      setFeedbackStatus("Confirming...")
 
-    await connection.confirmTransaction(txid)
+      await connection.confirmTransaction(txid)
 
-    setFeedbackStatus("Success!")
+      setFeedbackStatus("Success!")
+    } catch (e) {
+      const message = fromTxError(e)
+
+      setFeedbackStatus(
+        "Something went wrong. " + (message ? message : e.message || e)
+      )
+    }
   }
 
   return {
     farmerAccount,
     feedbackStatus,
+    farmLocks,
     claim,
     initFarmer,
     stakeAll,

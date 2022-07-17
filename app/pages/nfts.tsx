@@ -1,7 +1,14 @@
 /** @jsxImportSource theme-ui */
 import Head from "next/head"
 
-import { Button, Flex, Heading, Label, Text } from "@theme-ui/components"
+import {
+  Button,
+  Flex,
+  Heading,
+  Label,
+  Select,
+  Text,
+} from "@theme-ui/components"
 import { FormEvent, useMemo, useState } from "react"
 
 import Header from "@/components/Header/Header"
@@ -9,12 +16,16 @@ import { NFTGallery } from "@/components/NFTGallery/NFTGallery"
 import CollectionItem from "@/components/NFTGallery/CollectionItem"
 import useWalletNFTs, { NFT } from "@/hooks/useWalletNFTs"
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs"
-import useStaking, { StakeReceiptWithMetadata } from "@/hooks/useStaking"
+import useStaking, {
+  LockAccount,
+  StakeReceiptWithMetadata,
+} from "@/hooks/useStaking"
 import { LoadingIcon } from "@/components/icons/LoadingIcon"
 import { web3 } from "@project-serum/anchor"
 import NFTSelectInput from "@/components/NFTSelectInput/NFTSelectInput"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useRouter } from "next/router"
+import { CloseIcon } from "@/components/icons"
 
 const tabs = {
   wallet: 0,
@@ -27,8 +38,10 @@ export default function Home() {
   const [selectedWalletItems, setSelectedWalletItems] = useState<NFT[]>([])
   const [selectedVaultItems, setSelectedVaultItems] = useState<NFT[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isStakeFormOpen, setIsStakeFormOpen] = useState(false)
   const {
     farmerAccount,
+    farmLocks,
     initFarmer,
     stakeAll,
     claim,
@@ -41,6 +54,7 @@ export default function Home() {
   } = useStaking()
   const { query } = useRouter()
 
+  console.log(farmLocks)
   const activeTab = query.tab && tabs[query.tab.toString()]
 
   const { walletNFTs: bufferNFTs, fetchNFTs: fetchBufferNFTs } = useWalletNFTs([
@@ -133,6 +147,13 @@ export default function Home() {
       return acc
     },
     { buffed: {}, notBuffed: [] }
+  )
+
+  const sortedLocks = useMemo(
+    () =>
+      farmLocks &&
+      farmLocks.sort((a, b) => a.duration.toNumber() - b.duration.toNumber()),
+    [farmLocks]
   )
 
   return (
@@ -365,15 +386,110 @@ export default function Home() {
                     </Flex>
                     <Button
                       onClick={async (e) => {
-                        await stakeAll(selectedWalletItems)
-                        await fetchNFTs()
-                        await fetchReceipts()
-                        setSelectedWalletItems([])
+                        setIsStakeFormOpen(true)
                       }}
                       disabled={!selectedWalletItems.length}
                     >
                       Stake selected
                     </Button>
+                    <div
+                      sx={{
+                        position: "fixed",
+                        margin: "0 auto",
+                        backgroundColor: "background",
+                        visibility: isStakeFormOpen ? "visible" : "hidden",
+                        opacity: isStakeFormOpen ? 1 : 0,
+                        left: 0,
+                        right: 0,
+                        top: "16rem",
+                        zIndex: 999,
+                        maxWidth: "48rem",
+                        padding: "3.2rem",
+                        boxShadow: "0px 4px 4px rgba(0,0,0,0.25)",
+                      }}
+                    >
+                      <form
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "1.6rem",
+                          alignItems: "center",
+                        }}
+                        onSubmit={async (e) => {
+                          e.preventDefault()
+
+                          const data = new FormData(e.currentTarget)
+
+                          const selectedLockIndex = data.get("lock")
+
+                          const selectedLock: LockAccount =
+                            sortedLocks[selectedLockIndex.toString()]
+
+                          await stakeAll(selectedWalletItems, selectedLock)
+                          await fetchNFTs()
+                          await fetchReceipts()
+                          setSelectedWalletItems([])
+                          setIsStakeFormOpen(false)
+                        }}
+                      >
+                        <Label
+                          sx={{
+                            flexDirection: "column",
+                            gap: ".4rem",
+                          }}
+                        >
+                          Select a lock configuration:
+                          <Select name="lock">
+                            {sortedLocks &&
+                              sortedLocks.map((lock, index) => (
+                                <option
+                                  key={lock.address.toString()}
+                                  value={index}
+                                >
+                                  Duration:{" "}
+                                  {(
+                                    lock.duration.toNumber() /
+                                    84_600 /
+                                    7
+                                  ).toFixed(0)}{" "}
+                                  weeks | Bonus: +{lock.bonusFactor}% emission
+                                </option>
+                              ))}
+                          </Select>
+                        </Label>
+                        <Button type="submit">Stake selected!</Button>
+                        <Flex
+                          sx={{
+                            alignItems: "center",
+                            gap: ".8rem",
+                            margin: ".8rem 0",
+                          }}
+                        >
+                          {feedbackStatus ? (
+                            <>
+                              {feedbackStatus.indexOf("Success") === -1 ? (
+                                <LoadingIcon size="1.6rem" />
+                              ) : null}
+                              {"  "}{" "}
+                              <Text
+                                variant="small"
+                                sx={{
+                                  color:
+                                    feedbackStatus.indexOf("Success") !== -1
+                                      ? "success"
+                                      : "text",
+                                }}
+                              >
+                                {feedbackStatus}
+                              </Text>
+                            </>
+                          ) : (
+                            ""
+                          )}
+                          &nbsp;
+                        </Flex>
+                      </form>
+                    </div>
                   </Flex>
 
                   <NFTGallery NFTs={filteredNFTs}>
@@ -656,7 +772,7 @@ export default function Home() {
                                 gap: ".4rem",
                               }}
                             >
-                              Select Sunshine:
+                              Select a Sunshine Tab:
                               <NFTSelectInput
                                 NFTs={bufferNFTs}
                                 name="buffer_mint"
@@ -696,23 +812,6 @@ export default function Home() {
                             </Flex>
                           </form>
                         </div>
-                        <div
-                          onClick={() => setIsModalOpen(false)}
-                          sx={{
-                            "::before": {
-                              content: "''",
-                              position: "fixed",
-                              backgroundColor: "background",
-                              visibility: isModalOpen ? "visible" : "hidden",
-                              opacity: isModalOpen ? 0.5 : 0,
-                              zIndex: 998,
-                              top: 0,
-                              bottom: 0,
-                              left: 0,
-                              right: 0,
-                            },
-                          }}
-                        ></div>
                       </Flex>
                     ) : (
                       <Text>There are no NFTs staked or on a trip</Text>
@@ -727,6 +826,47 @@ export default function Home() {
                   )}
                 </TabPanel>
               </Tabs>
+              <div
+                onClick={() => {
+                  /** Close all forms */
+                  setIsModalOpen(false)
+                  setIsStakeFormOpen(false)
+                }}
+                sx={{
+                  display: isModalOpen || isStakeFormOpen ? "flex" : "none",
+                  flexDirection: "column",
+                  alignItems: "center",
+
+                  "::before": {
+                    content: "''",
+                    position: "fixed",
+                    backgroundColor: "background",
+                    visibility:
+                      isModalOpen || isStakeFormOpen ? "visible" : "hidden",
+                    opacity: isModalOpen || isStakeFormOpen ? 0.5 : 0,
+                    zIndex: 998,
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                  },
+                }}
+              >
+                <Button
+                  variant="resetted"
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                  }}
+                  onClick={() => {
+                    /** Close all forms */
+                    setIsModalOpen(false)
+                    setIsStakeFormOpen(false)
+                  }}
+                >
+                  <CloseIcon />
+                </Button>
+              </div>
             </Flex>
           </>
         ) : null}
