@@ -72,11 +72,11 @@ describe("staking-program", () => {
 
   // NFT that will be used as a buff.
   const buffCreator = new PublicKey(
-    "Dg1Egxd7pUx8Ymwb3jpZvTMjHd4m1oX4vFAkygAQRBF7"
+    "9nqYaDVzYgmednWYGgkGVjNt19hjUN3ZfoA34peHK7rY"
   );
 
   const buffMint = new PublicKey(
-    "4f5RtPzurYwV7DBKdpqBU96UeR5LeAr7UGu2dmykAoxN"
+    "9nqYaDVzYgmednWYGgkGVjNt19hjUN3ZfoA34peHK7rY"
   );
 
   const userWallet = anchor.web3.Keypair.fromSecretKey(
@@ -85,7 +85,9 @@ describe("staking-program", () => {
     )
   );
 
-  let rewardMint: PublicKey;
+  const rewardMint = new anchor.web3.PublicKey(
+    "BoBa5GSvGYDbjHe5FNGQ3dDhNES7z2T9aFG5Gr8qfGqe"
+  );
 
   console.log(farmAuthority.publicKey.toString());
 
@@ -109,7 +111,8 @@ describe("staking-program", () => {
       rewardMint,
     });
 
-    await send(connection, ix, [farmAuthority]);
+    const tx = await send(connection, ix, [farmAuthority]);
+    console.log(tx);
 
     const farm = findFarmAddress({
       authority: farmAuthority.publicKey,
@@ -130,14 +133,14 @@ describe("staking-program", () => {
       rewardMint,
     });
 
+    console.log(farm.toString());
+
     const ONE_WEEK = new BN(60 * 60 * 24 * 7);
 
     const lockConfigs: LockConfigFields[] = [
       { duration: new BN(0), bonusFactor: 0, cooldown: new BN(0) },
-      // { duration: ONE_WEEK, bonusFactor: 25, cooldown: new BN(0) },
-      // { duration: ONE_WEEK.muln(2), bonusFactor: 50, cooldown: new BN(0) },
-      // { duration: ONE_WEEK.muln(4), bonusFactor: 75, cooldown: new BN(0) },
     ];
+    console.log(lockConfigs.toString());
 
     const { ix } = await stakingClient.createCreateLocksInstruction({
       farm,
@@ -157,7 +160,7 @@ describe("staking-program", () => {
     expect(locks.every((lock) => lock.farm === farm.toBase58())).to.be.true;
   });
 
-  it("should be able to fund a farm's rewards", async () => {
+  it.skip("should be able to fund a farm's rewards", async () => {
     const farm = findFarmAddress({
       authority: farmAuthority.publicKey,
       rewardMint: rewardMint,
@@ -166,14 +169,14 @@ describe("staking-program", () => {
     const { ix } = await stakingClient.createFundRewardInstruction({
       farm,
       authority: farmAuthority.publicKey,
-      amount: new BN(100_000e9),
+      amount: new BN(100e9),
     });
 
     await send(connection, [ix], [farmAuthority]);
 
     const farmAccount = await Farm.fetch(connection, farm);
 
-    expect(farmAccount.reward.available.toNumber()).to.equal(100_000e9);
+    expect(farmAccount.reward.available.toNumber()).to.equal(100e9);
     expect(farmAccount.reward.reserved.toNumber()).to.equal(0);
   });
 
@@ -198,15 +201,14 @@ describe("staking-program", () => {
         creatorOrMint: creatorAddress,
         authority: farmAuthority.publicKey,
         farm,
-        rewardRate: { tokenAmount: new BN(100), intervalInSeconds: new BN(1) },
+        rewardRate: {
+          tokenAmount: new BN(0),
+          intervalInSeconds: new BN(1),
+        },
         whitelistType: new WhitelistType.Creator(),
       });
 
-    await send(
-      connection,
-      [whitelistBuff.ix, whitelistCreator.ix],
-      [farmAuthority]
-    );
+    await send(connection, [whitelistCreator.ix], [farmAuthority]);
 
     const whitelistProof = findWhitelistProofAddress({
       farm,
@@ -477,14 +479,14 @@ describe("staking-program", () => {
     const { ix } = stakingClient.createRemoveFromWhitelistInstruction({
       farm,
       authority: farmAuthority.publicKey,
-      addressToRemove: rewardMint,
+      addressToRemove: creatorAddress,
     });
 
     await send(connection, [ix], [farmAuthority]);
 
     const whitelistProof = findWhitelistProofAddress({
       farm,
-      creatorOrMint: rewardMint,
+      creatorOrMint: creatorAddress,
     });
     const whitelistProofAccount = await WhitelistProof.fetch(
       connection,
