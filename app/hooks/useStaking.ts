@@ -57,18 +57,24 @@ const useStaking = () => {
         )
 
         setFeedbackStatus("Fetching metadatas...")
-        const withMetadatas = await Promise.all(
-          stakingReceipts.map(async (receipt) => {
-            const metadata = await getNFTMetadata(
-              receipt.mint.toString(),
-              connection
-            )
+        const withMetadatas = (
+          await Promise.all(
+            stakingReceipts.map(async (receipt) => {
+              const metadata = await getNFTMetadata(
+                receipt.mint.toString(),
+                connection
+              )
 
-            const withMetadata = Object.assign(receipt, { metadata })
+              if (!metadata) {
+                return null
+              }
 
-            return withMetadata
-          })
-        )
+              const withMetadata = Object.assign(receipt, { metadata })
+
+              return withMetadata
+            })
+          )
+        ).filter((value) => value !== null)
 
         setStakeReceipts(withMetadatas)
         setFeedbackStatus("")

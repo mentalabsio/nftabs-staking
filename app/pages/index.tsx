@@ -105,37 +105,41 @@ export default function Home() {
                   }}
                   src="/tripped_out.webp"
                 />
-                <Heading variant="heading3">Stake NFTs</Heading>
+                <Heading variant="heading3">Stake Tripped Out NFTs</Heading>
               </Flex>
             </a>
           </Link>
-          <Link href="/sunshine">
-            <a>
-              <Flex
+          <a
+            title="Coming soon"
+            sx={{
+              opacity: 0.5,
+              cursor: "unset!important",
+            }}
+          >
+            <Flex
+              sx={{
+                flexDirection: "column",
+                minHeight: "16rem",
+                gap: "1.6rem",
+                alignItems: "center",
+              }}
+            >
+              <div
                 sx={{
-                  flexDirection: "column",
                   minHeight: "16rem",
-                  gap: "1.6rem",
-                  alignItems: "center",
                 }}
               >
-                <div
+                <img
                   sx={{
-                    minHeight: "16rem",
+                    maxWidth: "16rem",
                   }}
-                >
-                  <img
-                    sx={{
-                      maxWidth: "16rem",
-                    }}
-                    src="/sunshine.png"
-                  />
-                </div>
+                  src="/sunshine.png"
+                />
+              </div>
 
-                <Heading variant="heading3">Stake $SUNSHINE</Heading>
-              </Flex>
-            </a>
-          </Link>
+              <Heading variant="heading3">Stake $SUNSHINE</Heading>
+            </Flex>
+          </a>
         </Flex>
       </main>
 
