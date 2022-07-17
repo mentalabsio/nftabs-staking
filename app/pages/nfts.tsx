@@ -43,8 +43,6 @@ export default function Home() {
 
   const activeTab = query.tab && tabs[query.tab.toString()]
 
-  const [selectedTabIndex, setSelectedTabIndex] = useState(activeTab)
-
   const { walletNFTs: bufferNFTs, fetchNFTs: fetchBufferNFTs } = useWalletNFTs([
     "9nqYaDVzYgmednWYGgkGVjNt19hjUN3ZfoA34peHK7rY",
   ])
@@ -342,8 +340,6 @@ export default function Home() {
                   minHeight: "48rem",
                 }}
                 defaultIndex={activeTab}
-                selectedIndex={selectedTabIndex}
-                onSelect={(index) => setSelectedTabIndex(index)}
               >
                 <TabList>
                   <Tab>Your wallet</Tab>
