@@ -519,7 +519,7 @@ export default function Home() {
                                   )
                                 })
                               ) : (
-                                <Text>No NFTs staked</Text>
+                                <Text>There are no NFTs staked</Text>
                               )
                             ) : null}
                           </div>
@@ -531,9 +531,9 @@ export default function Home() {
                             gap: "1.6rem",
                           }}
                         >
-                          <Heading variant="h2">NFTs tripping</Heading>
+                          <Heading variant="h2">Tripping NFTs</Heading>
                           {reducedReceipts ? (
-                            reducedReceipts.buffed.length ? (
+                            Object.keys(reducedReceipts.buffed).length ? (
                               Object.entries(reducedReceipts.buffed).map(
                                 ([key, value]) => {
                                   const nftA = value[0]
@@ -560,7 +560,11 @@ export default function Home() {
                                         },
                                       }}
                                     >
-                                      <Flex>
+                                      <Flex
+                                        sx={{
+                                          gap: ".8rem",
+                                        }}
+                                      >
                                         <CollectionItem item={nftA.metadata} />
 
                                         <CollectionItem item={nftB.metadata} />
@@ -568,9 +572,10 @@ export default function Home() {
                                       <Flex
                                         sx={{
                                           flexDirection: "column",
+                                          gap: ".8rem",
                                         }}
                                       >
-                                        {/* <Text>Double emission activated</Text> */}
+                                        <Text>Emission doubled!</Text>
                                         <Button
                                           sx={{
                                             alignSelf: "center",
@@ -588,7 +593,7 @@ export default function Home() {
                                             await fetchBufferNFTs()
                                           }}
                                         >
-                                          Debuff
+                                          Finish the trip
                                         </Button>
                                       </Flex>
                                     </Flex>
@@ -596,7 +601,7 @@ export default function Home() {
                                 }
                               )
                             ) : (
-                              <Text>No NFTs on a trip</Text>
+                              <Text>There are no NFTs on a trip</Text>
                             )
                           ) : null}
                         </Flex>
@@ -658,7 +663,7 @@ export default function Home() {
                                 label="Select a Sunshine Tab"
                               />
                             </Label>
-                            <Button type="submit">Buff!</Button>
+                            <Button type="submit">Send on a trip!</Button>
                             <Flex
                               sx={{
                                 alignItems: "center",
@@ -713,7 +718,12 @@ export default function Home() {
                       <Text>There are no NFTs staked or on a trip</Text>
                     )
                   ) : (
-                    <LoadingIcon />
+                    <LoadingIcon
+                      sx={{
+                        display: "flex",
+                        margin: "3.2rem auto",
+                      }}
+                    />
                   )}
                 </TabPanel>
               </Tabs>
