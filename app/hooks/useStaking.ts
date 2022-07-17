@@ -13,11 +13,11 @@ import { Lock } from "lib/gen/accounts/Lock"
 import { fromTxError } from "lib/gen/errors"
 
 export const farmAuthorityPubKey = new web3.PublicKey(
-  "3hBWdLsxogSitaU7q2xzCtWvDVcA7G63HomM2zU3Tjo3"
+  "3KqfCnVwXLtax9rnK7LTNgrzMheXpimGeosHXhcCTeoG"
 )
 
 export const rewardMint = new web3.PublicKey(
-  "5uL9BnKwT4FdysAS3hH9kJuE8bXvjyQ73LrER8mbY89H"
+  "BoBa5GSvGYDbjHe5FNGQ3dDhNES7z2T9aFG5Gr8qfGqe"
 )
 
 export type StakeReceiptWithMetadata = StakeReceipt & {
@@ -205,11 +205,11 @@ const useStaking = () => {
             externalMetadata: { attributes },
           } = NFT
 
-          const tripEffect = attributes.find((attribute) => {
+          const tripEffectAttribute = attributes.find((attribute) => {
             return attribute.trait_type === "Trip Effect"
           })
 
-          if (!tripEffect) {
+          if (!tripEffectAttribute) {
             throw new Error("Can't stake. There is no Trip Effect attribute.")
           }
 
@@ -241,7 +241,7 @@ const useStaking = () => {
               | "4x"
               | "Nirvana";
              */
-            args: { amount: new BN(1), tripEffect },
+            args: { amount: new BN(1), tripEffect: tripEffectAttribute.value },
           })
 
           return ix
