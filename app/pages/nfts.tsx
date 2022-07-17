@@ -295,22 +295,22 @@ export default function Home() {
                   </Text>
                 ) : null} */}
 
-                {/* {farmerAccount?.totalRewardRate?.toNumber() ? (
+                {farmerAccount?.totalRewardRate?.toNumber() ? (
                   <Text>
-                    Rate:{" "}
+                    Your earning rate:{" "}
                     <b
                       sx={{
                         fontSize: "1.6rem",
                       }}
                     >
                       {(
-                        (farmerAccount?.totalRewardRate?.toNumber() / 1000000) *
+                        (farmerAccount?.totalRewardRate?.toNumber() / 1e9) *
                         86400
                       ).toFixed(2)}{" "}
                     </b>
-                    per day
+                    $SUN per day
                   </Text>
-                ) : null} */}
+                ) : null}
               </Flex>
               <Button onClick={claim}>Claim rewards</Button>
 

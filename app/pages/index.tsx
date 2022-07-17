@@ -13,7 +13,7 @@ export default function Home() {
         <title>NFTabs Staking</title>
         <meta
           name="description"
-          content="Stake Tripped Out NFTs and $SUNSHINE tokens"
+          content="Stake Tripped Out NFTs and $SUN tokens"
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -110,7 +110,7 @@ export default function Home() {
             </a>
           </Link>
           <a
-            title="Coming soon"
+            title="Stake Sunshine tokens"
             sx={{
               opacity: 0.5,
               cursor: "unset!important",
@@ -137,7 +137,7 @@ export default function Home() {
                 />
               </div>
 
-              <Heading variant="heading3">Stake $SUNSHINE</Heading>
+              <Heading variant="heading3">Stake $SUN</Heading>
             </Flex>
           </a>
         </Flex>

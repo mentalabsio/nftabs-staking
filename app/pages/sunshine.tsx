@@ -1,11 +1,10 @@
 /** @jsxImportSource theme-ui */
 import Head from "next/head"
 
-import { Button, Flex, Heading, Text } from "@theme-ui/components"
+import { Button, Flex, Heading, Input, Label, Text } from "@theme-ui/components"
 
 import Header from "@/components/Header/Header"
 
-import useStaking from "@/hooks/useStaking"
 import { LoadingIcon } from "@/components/icons/LoadingIcon"
 import { useStakingFungible } from "@/hooks/useStakingFungible"
 import { useWallet } from "@solana/wallet-adapter-react"
@@ -17,8 +16,8 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>NFTabs Staking - $SUNSHINE</title>
-        <meta name="description" content="Stake your $SUNSHINE tokens" />
+        <title>NFTabs Staking - $SUN</title>
+        <meta name="description" content="Stake your $SUN tokens" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -78,7 +77,7 @@ export default function Home() {
             fontFamily: "Funghetto, sans-serif",
           }}
         >
-          $SUNSHINE tokens
+          $SUN tokens
         </Text>
 
         <>
@@ -151,17 +150,37 @@ export default function Home() {
           ) : null}
 
           {farmerAccount ? (
-            <Flex
-              my="3.2rem"
+            <form
               sx={{
+                display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "1.6rem",
+                gap: "3.2rem",
+              }}
+              onSubmit={async (e) => {
+                e.preventDefault()
+
+                const amount = e.currentTarget.amount.value
+
+                await stakeFungibleTokens(amount)
               }}
             >
-              Stake Fungible
-              <Button onClick={stakeFungibleTokens}>Stake fungible</Button>
-            </Flex>
+              <Label
+                sx={{
+                  flexDirection: "column",
+                  gap: ".8rem",
+                }}
+              >
+                Amount of tokens to be staked:
+                <Input
+                  name="amount"
+                  type="number"
+                  placeholder="Write the amount to stake"
+                  step="any"
+                />
+              </Label>
+              <Button type="submit">Stake $SUN</Button>
+            </form>
           ) : null}
         </>
       </main>

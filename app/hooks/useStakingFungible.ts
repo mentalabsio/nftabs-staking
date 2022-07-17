@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback } from "react"
 import { BN } from "@project-serum/anchor"
 import { farmAuthorityPubKey, rewardMint } from "./useStaking"
 import { Farmer } from "lib/gen/accounts"
+import { fromTxError } from "lib/gen/errors"
 
 export const useStakingFungible = () => {
   const { connection } = useConnection()
@@ -48,42 +49,55 @@ export const useStakingFungible = () => {
     }
   }, [connection, publicKey])
 
-  const stakeFungibleTokens = async () => {
-    const farm = findFarmAddress({
-      authority: farmAuthorityPubKey,
-      rewardMint,
-    })
+  /**
+   *
+   * @param amount Raw amount with no decimals
+   */
+  const stakeFungibleTokens = async (amount: number) => {
+    try {
+      const farm = findFarmAddress({
+        authority: farmAuthorityPubKey,
+        rewardMint,
+      })
 
-    const locks = await findFarmLocks(connection, farm)
-    const lock = locks.find((lock) => lock.bonusFactor === 0)
+      const locks = await findFarmLocks(connection, farm)
+      const lock = locks.find((lock) => lock.bonusFactor === 0)
 
-    const stakingClient = StakingProgram(connection)
+      const stakingClient = StakingProgram(connection)
 
-    // Stake 0.5 tokens
-    const { ix } = await stakingClient.createStakeInstruction({
-      farm,
-      mint: rewardMint,
-      lock: lock.address,
-      owner: publicKey,
-      args: { amount: new BN(5e8), tripEffect: "None" },
-    })
+      console.log(amount)
+      // Stake 0.5 tokens
+      const { ix } = await stakingClient.createStakeInstruction({
+        farm,
+        mint: rewardMint,
+        lock: lock.address,
+        owner: publicKey,
+        args: { amount: new BN(amount * 1000000000), tripEffect: "None" },
+      })
 
-    const tx = new Transaction()
+      const tx = new Transaction()
 
-    tx.add(ix)
-    const latest = await connection.getLatestBlockhash()
-    tx.recentBlockhash = latest.blockhash
-    tx.feePayer = publicKey
+      tx.add(ix)
+      const latest = await connection.getLatestBlockhash()
+      tx.recentBlockhash = latest.blockhash
+      tx.feePayer = publicKey
 
-    setFeedbackStatus("Awaiting approval...")
+      setFeedbackStatus("Awaiting approval...")
 
-    const txid = await sendTransaction(tx, connection)
+      const txid = await sendTransaction(tx, connection)
 
-    setFeedbackStatus("Confirming...")
+      setFeedbackStatus("Confirming...")
 
-    await connection.confirmTransaction(txid)
+      await connection.confirmTransaction(txid)
 
-    setFeedbackStatus("Success!")
+      setFeedbackStatus("Success!")
+    } catch (e) {
+      const message = fromTxError(e)
+
+      setFeedbackStatus(
+        "Something went wrong. " + (message ? message : e.message || e)
+      )
+    }
   }
 
   const initFarmer = async () => {
