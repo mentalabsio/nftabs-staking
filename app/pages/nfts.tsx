@@ -156,6 +156,14 @@ export default function Home() {
     [farmLocks]
   )
 
+  const accrued = useMemo(() => {
+    return farmerAccount
+      ? ((new Date().getTime() / 1000 - farmerAccount?.lastUpdate.toNumber()) *
+          farmerAccount?.totalRewardRate?.toNumber()) /
+          1e9
+      : null
+  }, [farmerAccount])
+
   return (
     <>
       <Head>
@@ -280,20 +288,19 @@ export default function Home() {
                   gap: "1.6rem",
                 }}
               >
-                {/* {farmerAccount.accruedRewards.toNumber() ? (
+                {accrued ? (
                   <Text>
-                    Rewards:{" "}
+                    Accrued:{" "}
                     <b
                       sx={{
                         fontSize: "1.6rem",
                       }}
                     >
-                      {(
-                        farmerAccount.accruedRewards.toNumber() / 1000000
-                      ).toFixed(2)}
-                    </b>
+                      {accrued.toFixed(2)}
+                    </b>{" "}
+                    $SUN
                   </Text>
-                ) : null} */}
+                ) : null}
 
                 {farmerAccount?.totalRewardRate?.toNumber() ? (
                   <Text>
@@ -312,7 +319,9 @@ export default function Home() {
                   </Text>
                 ) : null}
               </Flex>
-              <Button onClick={claim}>Claim rewards</Button>
+              <Button onClick={claim}>
+                Claim {accrued ? accrued.toFixed(2) + " $SUN" : "rewards"}
+              </Button>
 
               <Flex
                 sx={{
