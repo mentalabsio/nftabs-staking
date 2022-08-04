@@ -15,7 +15,6 @@ const Header = () => {
         position: "sticky",
         top: 0,
         zIndex: 9,
-        backgroundColor: "rgba(209, 213, 218, 0.6)",
         borderBottom: "1px solid",
         backdropFilter: "blur(5px)",
         borderColor: "background2",
@@ -54,7 +53,6 @@ const Header = () => {
                     marginTop: ".6rem",
                     marginLeft: ".4rem",
                     fontFamily: "Funghetto, sans-serif",
-                    color: "background",
                   }}
                 >
                   Staking
