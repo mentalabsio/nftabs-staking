@@ -13,11 +13,11 @@ import { Lock } from "lib/gen/accounts/Lock"
 import { fromTxError } from "lib/gen/errors"
 
 export const farmAuthorityPubKey = new web3.PublicKey(
-  "3KqfCnVwXLtax9rnK7LTNgrzMheXpimGeosHXhcCTeoG"
+  "Gr99FeMTbebT5mc41s6qkosmDvZtTMXa9cbNm9urpZdY"
 )
 
 export const rewardMint = new web3.PublicKey(
-  "BoBa5GSvGYDbjHe5FNGQ3dDhNES7z2T9aFG5Gr8qfGqe"
+  "BDNRJZ6MA3YRhHcewYMjRDEc7oWQCxHknXU98wwTsSxu"
 )
 
 export type StakeReceiptWithMetadata = StakeReceipt & {

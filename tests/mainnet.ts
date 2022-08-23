@@ -56,7 +56,11 @@ describe("staking-program", () => {
   const stakingClient = StakingProgram(connection);
 
   // Farm creator.
-  const farmAuthority = Keypair.generate();
+  const farmAuthority = anchor.web3.Keypair.fromSecretKey(
+    anchor.utils.bytes.bs58.decode(
+      "2QU7gmoRt5Nr7GBP26AwszgcZZ3V2FqdufHFATDy3W3Loy55Adirz2Z7kZjxPt8nygot6Y9jpLYW37TaEaaHXDXc"
+    )
+  );
 
   // NFTs that will be staked.
   const nft = new PublicKey("4STkMcGPbB97JB15hq6Mv9YnvC5qmgY3aJkCewr4xmfF");
@@ -81,12 +85,12 @@ describe("staking-program", () => {
 
   const userWallet = anchor.web3.Keypair.fromSecretKey(
     anchor.utils.bytes.bs58.decode(
-      "2YFHVfWEbNAFJtJ2z2ENTfZXcpD982ggcKvZtmKhUz3o7Tm1fS5JSDf4se2xxjjvj2ykqF4t6QnjRwGxznaN82Ru"
+      "2QU7gmoRt5Nr7GBP26AwszgcZZ3V2FqdufHFATDy3W3Loy55Adirz2Z7kZjxPt8nygot6Y9jpLYW37TaEaaHXDXc"
     )
   );
 
   const rewardMint = new anchor.web3.PublicKey(
-    "BoBa5GSvGYDbjHe5FNGQ3dDhNES7z2T9aFG5Gr8qfGqe"
+    "BDNRJZ6MA3YRhHcewYMjRDEc7oWQCxHknXU98wwTsSxu"
   );
 
   console.log(farmAuthority.publicKey.toString());
@@ -169,18 +173,18 @@ describe("staking-program", () => {
     const { ix } = await stakingClient.createFundRewardInstruction({
       farm,
       authority: farmAuthority.publicKey,
-      amount: new BN(100e9),
+      amount: new BN(1000e2),
     });
 
     await send(connection, [ix], [farmAuthority]);
 
     const farmAccount = await Farm.fetch(connection, farm);
 
-    expect(farmAccount.reward.available.toNumber()).to.equal(100e9);
+    expect(farmAccount.reward.available.toNumber()).to.equal(1000e2);
     expect(farmAccount.reward.reserved.toNumber()).to.equal(0);
   });
 
-  it.skip("should be able to whitelist a creator address", async () => {
+  it("should be able to whitelist a creator address", async () => {
     const farm = findFarmAddress({
       authority: farmAuthority.publicKey,
       rewardMint,
@@ -208,7 +212,7 @@ describe("staking-program", () => {
         whitelistType: new WhitelistType.Creator(),
       });
 
-    await send(connection, [whitelistCreator.ix], [farmAuthority]);
+    await send(connection, [whitelistBuff.ix], [farmAuthority]);
 
     const whitelistProof = findWhitelistProofAddress({
       farm,
