@@ -43,7 +43,7 @@ pub fn handler(ctx: Context<FundReward>, amount: u64) -> Result<()> {
 
     anchor_spl::token::transfer(cpi_ctx, amount)?;
 
-    ctx.accounts.farm.reward.try_fund(amount)?;
+    // ctx.accounts.farm.reward.try_fund(amount)?;
 
     Ok(())
 }

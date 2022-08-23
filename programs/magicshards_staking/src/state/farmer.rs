@@ -57,7 +57,7 @@ impl Farmer {
 
         if increment > 0 {
             // Before updating, we try to reserve the reward.
-            farm.reward.try_reserve(increment)?;
+            // farm.reward.try_reserve(increment)?;
 
             self.accrued_rewards = self
                 .accrued_rewards

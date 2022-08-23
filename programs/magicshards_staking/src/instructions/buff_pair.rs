@@ -118,7 +118,7 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, BuffPair<'info>>) -> Resul
     let farm = &mut ctx.accounts.farm;
     ctx.accounts.farmer.update_accrued_rewards(farm)?;
 
-    farm.reward.try_reserve(increment)?;
+    // farm.reward.try_reserve(increment)?;
     ctx.accounts.farmer.increase_reward_rate(increment)?;
 
     Ok(())

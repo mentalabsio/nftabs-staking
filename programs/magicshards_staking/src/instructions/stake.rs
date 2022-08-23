@@ -154,7 +154,7 @@ pub fn handler<'info>(
 
     let reserved_amount = reward_rate as u64 * ctx.accounts.lock.duration;
 
-    farm.reward.try_reserve(reserved_amount)?;
+    // farm.reward.try_reserve(reserved_amount)?;
 
     ctx.accounts
         .farmer
