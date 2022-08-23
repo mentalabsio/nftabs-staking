@@ -43,7 +43,7 @@ impl Farmer {
 
         let reward = self.accrued_rewards;
 
-        farm.reward.try_release(reward)?;
+        // farm.reward.try_release(reward)?;
 
         self.accrued_rewards = 0;
 
