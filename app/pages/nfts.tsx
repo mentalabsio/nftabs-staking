@@ -172,7 +172,6 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-
       <div
         sx={{
           "&:before": {
@@ -297,7 +296,7 @@ export default function Home() {
                     >
                       {accrued.toFixed(2)}
                     </b>{" "}
-                    $SUN
+                    $OOO
                   </Text>
                 ) : null}
 
@@ -314,12 +313,12 @@ export default function Home() {
                         86400
                       ).toFixed(2)}{" "}
                     </b>
-                    $SUN per day
+                    $OOO per day
                   </Text>
                 ) : null}
               </Flex>
               <Button onClick={claim}>
-                Claim {accrued ? accrued.toFixed(2) + " $SUN" : "rewards"}
+                Claim {accrued ? accrued.toFixed(2) + " $OOO" : "rewards"}
               </Button>
 
               <Flex
