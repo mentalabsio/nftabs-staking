@@ -160,7 +160,7 @@ export default function Home() {
     return farmerAccount
       ? ((new Date().getTime() / 1000 - farmerAccount?.lastUpdate.toNumber()) *
           farmerAccount?.totalRewardRate?.toNumber()) /
-          1e9
+          1e2
       : null
   }, [farmerAccount])
 
@@ -309,7 +309,7 @@ export default function Home() {
                       }}
                     >
                       {(
-                        (farmerAccount?.totalRewardRate?.toNumber() / 1e9) *
+                        (farmerAccount?.totalRewardRate?.toNumber() / 1e2) *
                         86400
                       ).toFixed(2)}{" "}
                     </b>

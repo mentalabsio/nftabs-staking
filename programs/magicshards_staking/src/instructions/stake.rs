@@ -110,7 +110,7 @@ pub fn handler<'info>(
     let now_ts = now_ts()?;
     let farm = &mut ctx.accounts.farm;
 
-    let decimals = 9;
+    let decimals = 2;
     let emission = level_emission(level, decimals)?;
     let factor = ctx.accounts.lock.bonus_factor;
     let base_rate = amount * (ctx.accounts.whitelist_proof.reward_rate + emission);
