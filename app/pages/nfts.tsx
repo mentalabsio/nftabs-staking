@@ -34,6 +34,7 @@ const tabs = {
 export default function Home() {
   const { walletNFTs, fetchNFTs } = useWalletNFTs([
     "AFW3EJSbVep5uG643Qk7JLyRR2W5PVK39ECZrKBzkBP3",
+    "BXrvZdCNzvXFEW35mpLWPHgweTGVcMfuUJfLwxggQem",
   ])
   const [selectedWalletItems, setSelectedWalletItems] = useState<NFT[]>([])
   const [selectedVaultItems, setSelectedVaultItems] = useState<NFT[]>([])
@@ -116,7 +117,15 @@ export default function Home() {
           (attribute) => attribute.trait_type === "Trip Status"
         )
 
-        return tripStatusAttribute.value === "Tripped out NFT"
+        if (tripStatusAttribute) {
+          if (tripStatusAttribute.value === "Tripped out NFT") {
+            return true
+          }
+
+          return false
+        }
+
+        return true
       })
     )
   }, [orderedNFTs])

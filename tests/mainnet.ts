@@ -202,17 +202,19 @@ describe("staking-program", () => {
 
     const whitelistCreator =
       await stakingClient.createAddToWhitelistInstruction({
-        creatorOrMint: creatorAddress,
+        creatorOrMint: new PublicKey(
+          "BXrvZdCNzvXFEW35mpLWPHgweTGVcMfuUJfLwxggQem"
+        ),
         authority: farmAuthority.publicKey,
         farm,
         rewardRate: {
-          tokenAmount: new BN(0),
-          intervalInSeconds: new BN(1),
+          tokenAmount: new BN(5),
+          intervalInSeconds: new BN(86_400),
         },
         whitelistType: new WhitelistType.Creator(),
       });
 
-    await send(connection, [whitelistBuff.ix], [farmAuthority]);
+    await send(connection, [whitelistCreator.ix], [farmAuthority]);
 
     const whitelistProof = findWhitelistProofAddress({
       farm,

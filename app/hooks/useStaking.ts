@@ -209,7 +209,11 @@ const useStaking = () => {
             return attribute.trait_type === "Trip Effect"
           })
 
-          if (!tripEffectAttribute) {
+          const isParticle =
+            NFT.onchainMetadata.data.creators[0].address.toString() ===
+            "BXrvZdCNzvXFEW35mpLWPHgweTGVcMfuUJfLwxggQem"
+
+          if (!tripEffectAttribute && !isParticle) {
             throw new Error("Can't stake. There is no Trip Effect attribute.")
           }
 
@@ -220,7 +224,7 @@ const useStaking = () => {
             )
           })
 
-          if (!isTrippedOut) {
+          if (!isTrippedOut && !isParticle) {
             throw new Error("Can't stake. NFT is NOT Tripped Out.")
           }
 
@@ -241,7 +245,10 @@ const useStaking = () => {
               | "4x"
               | "Nirvana";
              */
-            args: { amount: new BN(1), tripEffect: tripEffectAttribute.value },
+            args: {
+              amount: new BN(1),
+              tripEffect: isParticle ? "None" : tripEffectAttribute.value,
+            },
           })
 
           return ix
