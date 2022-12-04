@@ -167,7 +167,7 @@ export default function Home() {
   const accrued = useMemo(() => {
     return farmerAccount
       ? ((new Date().getTime() / 1000 - farmerAccount?.lastUpdate.toNumber()) *
-          farmerAccount?.totalRewardRate?.toNumber()) /
+          farmerAccount?.totalRewardRate) /
           1e2
       : null
   }, [farmerAccount])
@@ -308,7 +308,7 @@ export default function Home() {
                   </Text>
                 ) : null}
 
-                {farmerAccount?.totalRewardRate?.toNumber() ? (
+                {farmerAccount?.totalRewardRate ? (
                   <Text>
                     Your earning rate:{" "}
                     <b
@@ -316,10 +316,9 @@ export default function Home() {
                         fontSize: "1.6rem",
                       }}
                     >
-                      {(
-                        (farmerAccount?.totalRewardRate?.toNumber() / 1e2) *
-                        86400
-                      ).toFixed(2)}{" "}
+                      {((farmerAccount?.totalRewardRate / 1e2) * 86400).toFixed(
+                        2
+                      )}{" "}
                     </b>
                     $OOO per day
                   </Text>

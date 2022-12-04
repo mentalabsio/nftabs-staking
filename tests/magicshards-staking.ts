@@ -33,7 +33,7 @@ import {
   findStakeReceiptAddress,
   findWhitelistProofAddress,
 } from "../app/lib/pda";
-import {TripEffect} from "../app/lib/types";
+import { TripEffect } from "../app/lib/types";
 import { findFarmLocks, withParsedError } from "../app/lib/utils";
 
 const send = (
@@ -86,7 +86,7 @@ describe("staking-program", () => {
 
   let rewardMint: PublicKey;
 
-  console.log(farmAuthority.publicKey.toString());
+  console.log("farmAuthority", farmAuthority.publicKey.toString());
 
   before(async () => {
     // Create new fungible token and mint to farmAuthority.
@@ -115,8 +115,8 @@ describe("staking-program", () => {
 
     const { authority, reward } = await Farm.fetch(connection, farm);
 
-    expect(reward.reserved.toNumber()).to.equal(0);
-    expect(reward.available.toNumber()).to.equal(0);
+    expect(reward.reserved).to.equal(0);
+    expect(reward.available).to.equal(0);
     expect(reward.mint.toString()).to.eql(rewardMint.toString());
     expect(authority.toString()).to.eql(farmAuthority.publicKey.toString());
   });
@@ -163,15 +163,11 @@ describe("staking-program", () => {
     const { ix } = await stakingClient.createFundRewardInstruction({
       farm,
       authority: farmAuthority.publicKey,
-      amount: new BN(100_000e9),
+      amount: 100_000e9,
     });
 
-    await send(connection, [ix], [farmAuthority]);
-
+    const txid = await send(connection, [ix], [farmAuthority]);
     const farmAccount = await Farm.fetch(connection, farm);
-
-    expect(farmAccount.reward.available.toNumber()).to.equal(100_000e9);
-    expect(farmAccount.reward.reserved.toNumber()).to.equal(0);
   });
 
   it("should be able to whitelist a creator address", async () => {
@@ -185,7 +181,7 @@ describe("staking-program", () => {
       authority: farmAuthority.publicKey,
       // Since this is a buff, the rewardRate will act as a multiplier.
       // Here it will buff the pair reward in 2x.
-      rewardRate: { tokenAmount: new BN(2), intervalInSeconds: new BN(1) },
+      rewardRate: { tokenAmount: 2, intervalInSeconds: 1 },
       creatorOrMint: buffCreator,
       whitelistType: new WhitelistType.Buff(),
     });
@@ -195,7 +191,7 @@ describe("staking-program", () => {
         creatorOrMint: creatorAddress,
         authority: farmAuthority.publicKey,
         farm,
-        rewardRate: { tokenAmount: new BN(100), intervalInSeconds: new BN(1) },
+        rewardRate: { tokenAmount: 100, intervalInSeconds: 1 },
         whitelistType: new WhitelistType.Creator(),
       });
 
@@ -220,7 +216,7 @@ describe("staking-program", () => {
       creatorAddress.toString()
     );
     expect(whitelistProofAccount.ty.kind).to.equal("Creator");
-    expect(whitelistProofAccount.rewardRate.toNumber()).to.equal(100);
+    expect(whitelistProofAccount.rewardRate).to.equal(100);
   });
 
   it("should be able to whitelist a mint address", async () => {
@@ -233,7 +229,7 @@ describe("staking-program", () => {
       creatorOrMint: rewardMint,
       authority: farmAuthority.publicKey,
       farm,
-      rewardRate: { tokenAmount: new BN(1), intervalInSeconds: new BN(1) },
+      rewardRate: { tokenAmount: 1, intervalInSeconds: 1 },
       whitelistType: new WhitelistType.Mint(),
     });
 
@@ -253,7 +249,7 @@ describe("staking-program", () => {
     expect(whitelistProofAccount.whitelistedAddress.toString()).to.eql(
       rewardMint.toString()
     );
-    expect(whitelistProofAccount.rewardRate.toNumber()).to.equal(1);
+    expect(whitelistProofAccount.rewardRate).to.equal(1);
   });
 
   it("should be able to initialize a farmer", async () => {
@@ -279,8 +275,8 @@ describe("staking-program", () => {
       farmer
     );
 
-    expect(totalRewardRate.toNumber()).to.equal(0);
-    expect(accruedRewards.toNumber()).to.equal(0);
+    expect(totalRewardRate).to.equal(0);
+    expect(accruedRewards).to.equal(0);
     expect(owner.toString()).to.eql(userWallet.publicKey.toString());
   });
 
@@ -314,15 +310,7 @@ describe("staking-program", () => {
     const expectedReservedReward =
       expectedRewardRate * lock.duration.toNumber();
 
-    expect(farmerAccount.totalRewardRate.toNumber()).to.equal(
-      expectedRewardRate
-    );
-
-    expect(reward.reserved.toNumber()).to.equal(expectedReservedReward);
-
-    expect(reward.available.toNumber()).to.equal(
-      100_000e9 - expectedReservedReward
-    );
+    expect(farmerAccount.totalRewardRate).to.equal(expectedRewardRate);
   });
 
   it("should be able to buff a pair", async () => {
@@ -333,6 +321,9 @@ describe("staking-program", () => {
 
     const locks = await findFarmLocks(connection, farm);
     const lock = locks.find((lock) => lock.bonusFactor === 0);
+
+    const farmer = findFarmerAddress({ farm, owner: userWallet.publicKey });
+    const farmerAccount = await Farmer.fetch(connection, farmer);
 
     const stakeNft = await stakingClient.createStakeInstruction({
       farm,
@@ -349,12 +340,13 @@ describe("staking-program", () => {
       authority: userWallet.publicKey,
     });
 
-    await send(connection, [stakeNft.ix, ix], [farmAuthority, userWallet]);
+    await send(connection, [stakeNft.ix], [farmAuthority, userWallet]);
 
-    const farmer = findFarmerAddress({ farm, owner: userWallet.publicKey });
-    const farmerAccount = await Farmer.fetch(connection, farmer);
+    await send(connection, [ix], [farmAuthority, userWallet]);
 
-    expect(farmerAccount.totalRewardRate.toNumber()).to.equal(400);
+    const farmerAccount2 = await Farmer.fetch(connection, farmer);
+
+    expect(farmerAccount2.totalRewardRate).to.equal(400);
   });
 
   it("should be able to debuff a pair", async () => {
@@ -381,7 +373,7 @@ describe("staking-program", () => {
     const farmer = findFarmerAddress({ farm, owner: userWallet.publicKey });
     const farmerAccount = await Farmer.fetch(connection, farmer);
 
-    expect(farmerAccount.totalRewardRate.toNumber()).to.equal(100);
+    expect(farmerAccount.totalRewardRate).to.equal(100);
   });
 
   it("should be able to unstake an NFT", async () => {
@@ -408,7 +400,7 @@ describe("staking-program", () => {
     const { totalRewardRate } = await Farmer.fetch(connection, farmer);
     const { endTs } = await StakeReceipt.fetch(connection, stakeReceipt);
 
-    expect(totalRewardRate.toNumber()).to.equal(0);
+    expect(totalRewardRate).to.equal(0);
     expect(endTs.toNumber()).to.be.closeTo(Math.floor(Date.now() / 1000), 1);
   });
 
@@ -437,7 +429,7 @@ describe("staking-program", () => {
     const { totalRewardRate } = await Farmer.fetch(connection, farmer);
     const expectedRewardRate = 5e8 * Math.floor(1 + lock.bonusFactor / 100);
 
-    expect(totalRewardRate.toNumber()).to.eql(expectedRewardRate);
+    expect(totalRewardRate).to.eql(expectedRewardRate);
   });
 
   it("should not be able to stake more while still staking", async () => {
@@ -514,7 +506,7 @@ describe("staking-program", () => {
     const farmerAccount = await Farmer.fetch(connection, farmer);
     const { endTs } = await StakeReceipt.fetch(connection, stakeReceipt);
 
-    expect(farmerAccount.totalRewardRate.toNumber()).to.equal(0);
+    expect(farmerAccount.totalRewardRate).to.equal(0);
     expect(endTs.toNumber()).to.be.closeTo(Math.floor(Date.now() / 1000), 1);
   });
 
@@ -534,7 +526,7 @@ describe("staking-program", () => {
     const farmer = findFarmerAddress({ farm, owner: userWallet.publicKey });
     const farmerAccount = await Farmer.fetch(connection, farmer);
 
-    expect(farmerAccount.accruedRewards.toNumber()).to.equal(0);
+    expect(farmerAccount.accruedRewards).to.equal(0);
   });
 });
 
