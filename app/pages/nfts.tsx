@@ -55,7 +55,6 @@ export default function Home() {
   } = useStaking()
   const { query } = useRouter()
 
-  console.log(farmLocks)
   const activeTab = query.tab && tabs[query.tab.toString()]
 
   const { walletNFTs: bufferNFTs, fetchNFTs: fetchBufferNFTs } = useWalletNFTs([

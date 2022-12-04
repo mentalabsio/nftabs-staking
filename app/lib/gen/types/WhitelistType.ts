@@ -8,6 +8,8 @@ export interface CreatorJSON {
 }
 
 export class Creator {
+  static readonly discriminator = 0
+  static readonly kind = "Creator"
   readonly discriminator = 0
   readonly kind = "Creator"
 
@@ -29,6 +31,8 @@ export interface MintJSON {
 }
 
 export class Mint {
+  static readonly discriminator = 1
+  static readonly kind = "Mint"
   readonly discriminator = 1
   readonly kind = "Mint"
 
@@ -50,6 +54,8 @@ export interface BuffJSON {
 }
 
 export class Buff {
+  static readonly discriminator = 2
+  static readonly kind = "Buff"
   readonly discriminator = 2
   readonly kind = "Buff"
 

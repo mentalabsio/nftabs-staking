@@ -7,21 +7,21 @@ import { PROGRAM_ID } from "../programId"
 export interface WhitelistProofFields {
   whitelistedAddress: PublicKey
   farm: PublicKey
-  rewardRate: BN
+  rewardRate: number
   ty: types.WhitelistTypeKind
 }
 
 export interface WhitelistProofJSON {
   whitelistedAddress: string
   farm: string
-  rewardRate: string
+  rewardRate: number
   ty: types.WhitelistTypeJSON
 }
 
 export class WhitelistProof {
   readonly whitelistedAddress: PublicKey
   readonly farm: PublicKey
-  readonly rewardRate: BN
+  readonly rewardRate: number
   readonly ty: types.WhitelistTypeKind
 
   static readonly discriminator = Buffer.from([
@@ -31,7 +31,7 @@ export class WhitelistProof {
   static readonly layout = borsh.struct([
     borsh.publicKey("whitelistedAddress"),
     borsh.publicKey("farm"),
-    borsh.u64("rewardRate"),
+    borsh.f64("rewardRate"),
     types.WhitelistType.layout("ty"),
   ])
 
@@ -95,7 +95,7 @@ export class WhitelistProof {
     return {
       whitelistedAddress: this.whitelistedAddress.toString(),
       farm: this.farm.toString(),
-      rewardRate: this.rewardRate.toString(),
+      rewardRate: this.rewardRate,
       ty: this.ty.toJSON(),
     }
   }
@@ -104,7 +104,7 @@ export class WhitelistProof {
     return new WhitelistProof({
       whitelistedAddress: new PublicKey(obj.whitelistedAddress),
       farm: new PublicKey(obj.farm),
-      rewardRate: new BN(obj.rewardRate),
+      rewardRate: obj.rewardRate,
       ty: types.WhitelistType.fromJSON(obj.ty),
     })
   }

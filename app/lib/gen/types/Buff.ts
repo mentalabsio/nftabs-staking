@@ -5,17 +5,17 @@ import * as borsh from "@project-serum/borsh"
 
 export interface BuffFields {
   key: PublicKey
-  factor: BN
+  factor: number
 }
 
 export interface BuffJSON {
   key: string
-  factor: string
+  factor: number
 }
 
 export class Buff {
   readonly key: PublicKey
-  readonly factor: BN
+  readonly factor: number
 
   constructor(fields: BuffFields) {
     this.key = fields.key
@@ -23,7 +23,7 @@ export class Buff {
   }
 
   static layout(property?: string) {
-    return borsh.struct([borsh.publicKey("key"), borsh.u64("factor")], property)
+    return borsh.struct([borsh.publicKey("key"), borsh.f64("factor")], property)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,14 +44,14 @@ export class Buff {
   toJSON(): BuffJSON {
     return {
       key: this.key.toString(),
-      factor: this.factor.toString(),
+      factor: this.factor,
     }
   }
 
   static fromJSON(obj: BuffJSON): Buff {
     return new Buff({
       key: new PublicKey(obj.key),
-      factor: new BN(obj.factor),
+      factor: obj.factor,
     })
   }
 

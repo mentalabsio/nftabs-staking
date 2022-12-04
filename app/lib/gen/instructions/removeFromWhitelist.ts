@@ -1,4 +1,4 @@
-import { TransactionInstruction, PublicKey } from "@solana/web3.js" // eslint-disable-line @typescript-eslint/no-unused-vars
+import { TransactionInstruction, PublicKey, AccountMeta } from "@solana/web3.js" // eslint-disable-line @typescript-eslint/no-unused-vars
 import BN from "bn.js" // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as borsh from "@project-serum/borsh" // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as types from "../types" // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -13,7 +13,7 @@ export interface RemoveFromWhitelistAccounts {
 }
 
 export function removeFromWhitelist(accounts: RemoveFromWhitelistAccounts) {
-  const keys = [
+  const keys: Array<AccountMeta> = [
     { pubkey: accounts.farm, isSigner: false, isWritable: false },
     { pubkey: accounts.farmManager, isSigner: false, isWritable: false },
     { pubkey: accounts.whitelistProof, isSigner: false, isWritable: true },

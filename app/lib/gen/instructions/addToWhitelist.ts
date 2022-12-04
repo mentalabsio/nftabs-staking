@@ -1,11 +1,11 @@
-import { TransactionInstruction, PublicKey } from "@solana/web3.js" // eslint-disable-line @typescript-eslint/no-unused-vars
+import { TransactionInstruction, PublicKey, AccountMeta } from "@solana/web3.js" // eslint-disable-line @typescript-eslint/no-unused-vars
 import BN from "bn.js" // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as borsh from "@project-serum/borsh" // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as types from "../types" // eslint-disable-line @typescript-eslint/no-unused-vars
 import { PROGRAM_ID } from "../programId"
 
 export interface AddToWhitelistArgs {
-  rewardRate: BN
+  rewardRate: number
   whitelistType: types.WhitelistTypeKind
 }
 
@@ -19,7 +19,7 @@ export interface AddToWhitelistAccounts {
 }
 
 export const layout = borsh.struct([
-  borsh.u64("rewardRate"),
+  borsh.f64("rewardRate"),
   types.WhitelistType.layout("whitelistType"),
 ])
 
@@ -27,7 +27,7 @@ export function addToWhitelist(
   args: AddToWhitelistArgs,
   accounts: AddToWhitelistAccounts
 ) {
-  const keys = [
+  const keys: Array<AccountMeta> = [
     { pubkey: accounts.farm, isSigner: false, isWritable: false },
     { pubkey: accounts.farmManager, isSigner: false, isWritable: false },
     { pubkey: accounts.whitelistProof, isSigner: false, isWritable: true },

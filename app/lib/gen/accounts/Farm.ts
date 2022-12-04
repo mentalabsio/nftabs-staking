@@ -3,17 +3,16 @@ import BN from "bn.js" // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as borsh from "@project-serum/borsh" // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as types from "../types" // eslint-disable-line @typescript-eslint/no-unused-vars
 import { PROGRAM_ID } from "../programId"
-import { RewardFields, RewardJSON } from "../types/Reward"
 
 export interface FarmFields {
   authority: PublicKey
-  reward: RewardFields
+  reward: types.RewardFields
   bump: Array<number>
 }
 
 export interface FarmJSON {
   authority: string
-  reward: RewardJSON
+  reward: types.RewardJSON
   bump: Array<number>
 }
 

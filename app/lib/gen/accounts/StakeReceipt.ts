@@ -3,7 +3,6 @@ import BN from "bn.js" // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as borsh from "@project-serum/borsh" // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as types from "../types" // eslint-disable-line @typescript-eslint/no-unused-vars
 import { PROGRAM_ID } from "../programId"
-import { BuffFields, BuffJSON } from "../types/Buff"
 
 export interface StakeReceiptFields {
   farmer: PublicKey
@@ -12,8 +11,8 @@ export interface StakeReceiptFields {
   startTs: BN
   endTs: BN | null
   amount: BN
-  rewardRate: BN
-  buff: BuffFields | null
+  rewardRate: number
+  buff: types.BuffFields | null
 }
 
 export interface StakeReceiptJSON {
@@ -23,8 +22,8 @@ export interface StakeReceiptJSON {
   startTs: string
   endTs: string | null
   amount: string
-  rewardRate: string
-  buff: BuffJSON | null
+  rewardRate: number
+  buff: types.BuffJSON | null
 }
 
 export class StakeReceipt {
@@ -34,7 +33,7 @@ export class StakeReceipt {
   readonly startTs: BN
   readonly endTs: BN | null
   readonly amount: BN
-  readonly rewardRate: BN
+  readonly rewardRate: number
   readonly buff: types.Buff | null
 
   static readonly discriminator = Buffer.from([
@@ -48,7 +47,7 @@ export class StakeReceipt {
     borsh.u64("startTs"),
     borsh.option(borsh.u64(), "endTs"),
     borsh.u64("amount"),
-    borsh.u64("rewardRate"),
+    borsh.f64("rewardRate"),
     borsh.option(types.Buff.layout(), "buff"),
   ])
 
@@ -124,7 +123,7 @@ export class StakeReceipt {
       startTs: this.startTs.toString(),
       endTs: (this.endTs && this.endTs.toString()) || null,
       amount: this.amount.toString(),
-      rewardRate: this.rewardRate.toString(),
+      rewardRate: this.rewardRate,
       buff: (this.buff && this.buff.toJSON()) || null,
     }
   }
@@ -137,7 +136,7 @@ export class StakeReceipt {
       startTs: new BN(obj.startTs),
       endTs: (obj.endTs && new BN(obj.endTs)) || null,
       amount: new BN(obj.amount),
-      rewardRate: new BN(obj.rewardRate),
+      rewardRate: obj.rewardRate,
       buff: (obj.buff && types.Buff.fromJSON(obj.buff)) || null,
     })
   }

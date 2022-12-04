@@ -5,20 +5,20 @@ import * as borsh from "@project-serum/borsh"
 
 export interface RewardFields {
   mint: PublicKey
-  reserved: BN
-  available: BN
+  reserved: number
+  available: number
 }
 
 export interface RewardJSON {
   mint: string
-  reserved: string
-  available: string
+  reserved: number
+  available: number
 }
 
 export class Reward {
   readonly mint: PublicKey
-  readonly reserved: BN
-  readonly available: BN
+  readonly reserved: number
+  readonly available: number
 
   constructor(fields: RewardFields) {
     this.mint = fields.mint
@@ -28,7 +28,7 @@ export class Reward {
 
   static layout(property?: string) {
     return borsh.struct(
-      [borsh.publicKey("mint"), borsh.u64("reserved"), borsh.u64("available")],
+      [borsh.publicKey("mint"), borsh.f64("reserved"), borsh.f64("available")],
       property
     )
   }
@@ -53,16 +53,16 @@ export class Reward {
   toJSON(): RewardJSON {
     return {
       mint: this.mint.toString(),
-      reserved: this.reserved.toString(),
-      available: this.available.toString(),
+      reserved: this.reserved,
+      available: this.available,
     }
   }
 
   static fromJSON(obj: RewardJSON): Reward {
     return new Reward({
       mint: new PublicKey(obj.mint),
-      reserved: new BN(obj.reserved),
-      available: new BN(obj.available),
+      reserved: obj.reserved,
+      available: obj.available,
     })
   }
 

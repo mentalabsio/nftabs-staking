@@ -3,9 +3,12 @@ import * as anchor from "./anchor"
 import * as custom from "./custom"
 
 export function fromCode(
-  code: number
+  code: number,
+  logs?: string[]
 ): custom.CustomError | anchor.AnchorError | null {
-  return code >= 6000 ? custom.fromCode(code) : anchor.fromCode(code)
+  return code >= 6000
+    ? custom.fromCode(code, logs)
+    : anchor.fromCode(code, logs)
 }
 
 function hasOwnProperty<X extends object, Y extends PropertyKey>(
@@ -15,8 +18,7 @@ function hasOwnProperty<X extends object, Y extends PropertyKey>(
   return Object.hasOwnProperty.call(obj, prop)
 }
 
-const errorRe =
-  /failed to send transaction: Transaction simulation failed: Error processing Instruction 0: custom program error: (\w+)/
+const errorRe = /Program (\w+) failed: custom program error: (\w+)/
 
 export function fromTxError(
   err: unknown
@@ -24,21 +26,28 @@ export function fromTxError(
   if (
     typeof err !== "object" ||
     err === null ||
-    !hasOwnProperty(err, "message")
+    !hasOwnProperty(err, "logs") ||
+    !Array.isArray(err.logs)
   ) {
     return null
   }
 
-  /**
-   * err.message = failed to send transaction: Transaction simulation failed: Error processing Instruction 0: custom program error: 0x1773
-   */
-  const rexMessage = errorRe.exec((err && (err.message as string)) || "")
+  let firstMatch: RegExpExecArray | null = null
+  for (const logLine of err.logs) {
+    firstMatch = errorRe.exec(logLine)
+    if (firstMatch !== null) {
+      break
+    }
+  }
 
-  if (rexMessage === null) {
+  if (firstMatch === null) {
     return null
   }
 
-  const codeRaw = rexMessage[1]
+  const [programIdRaw, codeRaw] = firstMatch.slice(1)
+  if (programIdRaw !== PROGRAM_ID.toString()) {
+    return null
+  }
 
   let errorCode: number
   try {
@@ -47,5 +56,5 @@ export function fromTxError(
     return null
   }
 
-  return fromCode(errorCode)
+  return fromCode(errorCode, err.logs)
 }

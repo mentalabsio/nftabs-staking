@@ -7,8 +7,8 @@ import { PROGRAM_ID } from "../programId"
 export interface FarmerFields {
   farm: PublicKey
   owner: PublicKey
-  accruedRewards: BN
-  totalRewardRate: BN
+  accruedRewards: number
+  totalRewardRate: number
   lastUpdate: BN
   bump: Array<number>
 }
@@ -16,8 +16,8 @@ export interface FarmerFields {
 export interface FarmerJSON {
   farm: string
   owner: string
-  accruedRewards: string
-  totalRewardRate: string
+  accruedRewards: number
+  totalRewardRate: number
   lastUpdate: string
   bump: Array<number>
 }
@@ -25,8 +25,8 @@ export interface FarmerJSON {
 export class Farmer {
   readonly farm: PublicKey
   readonly owner: PublicKey
-  readonly accruedRewards: BN
-  readonly totalRewardRate: BN
+  readonly accruedRewards: number
+  readonly totalRewardRate: number
   readonly lastUpdate: BN
   readonly bump: Array<number>
 
@@ -37,8 +37,8 @@ export class Farmer {
   static readonly layout = borsh.struct([
     borsh.publicKey("farm"),
     borsh.publicKey("owner"),
-    borsh.u64("accruedRewards"),
-    borsh.u64("totalRewardRate"),
+    borsh.f64("accruedRewards"),
+    borsh.f64("totalRewardRate"),
     borsh.u64("lastUpdate"),
     borsh.array(borsh.u8(), 1, "bump"),
   ])
@@ -107,8 +107,8 @@ export class Farmer {
     return {
       farm: this.farm.toString(),
       owner: this.owner.toString(),
-      accruedRewards: this.accruedRewards.toString(),
-      totalRewardRate: this.totalRewardRate.toString(),
+      accruedRewards: this.accruedRewards,
+      totalRewardRate: this.totalRewardRate,
       lastUpdate: this.lastUpdate.toString(),
       bump: this.bump,
     }
@@ -118,8 +118,8 @@ export class Farmer {
     return new Farmer({
       farm: new PublicKey(obj.farm),
       owner: new PublicKey(obj.owner),
-      accruedRewards: new BN(obj.accruedRewards),
-      totalRewardRate: new BN(obj.totalRewardRate),
+      accruedRewards: obj.accruedRewards,
+      totalRewardRate: obj.totalRewardRate,
       lastUpdate: new BN(obj.lastUpdate),
       bump: obj.bump,
     })

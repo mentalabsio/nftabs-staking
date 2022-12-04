@@ -1,4 +1,4 @@
-import { TransactionInstruction, PublicKey } from "@solana/web3.js" // eslint-disable-line @typescript-eslint/no-unused-vars
+import { TransactionInstruction, PublicKey, AccountMeta } from "@solana/web3.js" // eslint-disable-line @typescript-eslint/no-unused-vars
 import BN from "bn.js" // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as borsh from "@project-serum/borsh" // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as types from "../types" // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -18,7 +18,7 @@ export interface ClaimRewardsAccounts {
 }
 
 export function claimRewards(accounts: ClaimRewardsAccounts) {
-  const keys = [
+  const keys: Array<AccountMeta> = [
     { pubkey: accounts.farm, isSigner: false, isWritable: true },
     { pubkey: accounts.farmer, isSigner: false, isWritable: true },
     { pubkey: accounts.rewardMint, isSigner: false, isWritable: false },
