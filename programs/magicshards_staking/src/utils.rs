@@ -2,8 +2,6 @@ use anchor_lang::{ prelude::*, system_program };
 use anchor_spl::token;
 use solutils::wrappers::metadata::MetadataAccount;
 
-use crate::error::StakingError;
-
 pub fn initialize_pda<'info>(
   seeds: &[&[u8]],
   space: usize,

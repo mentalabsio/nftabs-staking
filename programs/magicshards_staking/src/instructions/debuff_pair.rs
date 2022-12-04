@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{ Mint, Token, TokenAccount, Transfer };
 
-use crate::{ error::StakingError, state::* };
+use crate::{ state::* };
 
 #[derive(Accounts)]
 pub struct DebuffPair<'info> {
@@ -81,8 +81,7 @@ pub fn handler(ctx: Context<DebuffPair>) -> Result<()> {
 
   let decrement = mint_a_decrement + mint_b_decrement;
 
-  let farm = &mut ctx.accounts.farm;
-  ctx.accounts.farmer.update_accrued_rewards(farm)?;
+  ctx.accounts.farmer.update_accrued_rewards()?;
   ctx.accounts.farmer.decrease_reward_rate(decrement)?;
 
   Ok(())

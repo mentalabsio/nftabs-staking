@@ -1,8 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{ error::StakingError, utils::now_ts };
-
-use super::Farm;
+use crate::{ utils::now_ts };
 
 #[account]
 pub struct Farmer {
@@ -33,8 +31,8 @@ impl Farmer {
     })
   }
 
-  pub fn claim_accrued(&mut self, farm: &mut Farm) -> Result<f64> {
-    self.update_accrued_rewards(farm)?;
+  pub fn claim_accrued(&mut self) -> Result<f64> {
+    self.update_accrued_rewards()?;
 
     let reward = self.accrued_rewards;
 
@@ -45,14 +43,13 @@ impl Farmer {
     Ok(reward)
   }
 
-  pub fn update_accrued_rewards(&mut self, farm: &mut Farm) -> Result<()> {
+  pub fn update_accrued_rewards(&mut self) -> Result<()> {
     let now = now_ts()?;
     let elapsed = now.saturating_sub(self.last_update);
     let increment = self.total_reward_rate * (elapsed as f64);
 
     if increment > 0.0 {
       // Before updating, we try to reserve the reward.
-      // farm.reward.try_reserve(increment)?;
 
       self.accrued_rewards = self.accrued_rewards + increment;
     }

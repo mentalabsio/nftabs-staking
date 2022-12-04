@@ -101,7 +101,6 @@ pub fn handler<'info>(
   ctx.accounts.lock_gem(amount)?;
 
   let now_ts = now_ts()?;
-  let farm = &mut ctx.accounts.farm;
 
   let decimals = 2;
   let emission = level_emission(level, decimals)?;
@@ -144,10 +143,6 @@ pub fn handler<'info>(
       }
     }
   }
-
-  let reserved_amount = reward_rate * (ctx.accounts.lock.duration as f64);
-
-  // farm.reward.try_reserve(reserved_amount)?;
 
   ctx.accounts.farmer.increase_reward_rate(reward_rate as f64)?;
 

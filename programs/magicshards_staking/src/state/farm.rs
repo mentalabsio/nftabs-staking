@@ -1,7 +1,5 @@
 use anchor_lang::prelude::*;
 
-use crate::error::StakingError;
-
 #[derive(Copy, Clone, Debug, AnchorSerialize, AnchorDeserialize)]
 pub struct Reward {
   pub mint: Pubkey,
@@ -19,31 +17,6 @@ impl Reward {
       available: 0.0,
     }
   }
-
-  // pub fn try_fund(&mut self, amount: f64) -> Result<()> {
-  //   self.available = self.available.checked_add(amount).ok_or(StakingError::ArithmeticError)?;
-  //   Ok(())
-  // }
-
-  // pub fn try_reserve(&mut self, amount: f64) -> Result<()> {
-  //   let increment = self.reserved.checked_add(amount).ok_or(StakingError::ArithmeticError)?;
-
-  //   require_gte!(self.available, increment, StakingError::CouldNotReserveReward);
-
-  //   self.reserved = increment;
-
-  //   self.available = self.available.checked_sub(increment).ok_or(StakingError::ArithmeticError)?;
-
-  //   Ok(())
-  // }
-
-  // pub fn try_release(&mut self, amount: f64) -> Result<()> {
-  //   let decrement = self.reserved.checked_sub(amount).ok_or(StakingError::CouldNotReleaseReward)?;
-
-  //   self.reserved = decrement;
-
-  //   Ok(())
-  // }
 }
 
 #[account]
