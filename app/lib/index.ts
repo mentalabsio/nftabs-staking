@@ -212,9 +212,6 @@ export const StakingProgram = (connection: Connection) => {
 
     const rate = tokenAmount / intervalInSeconds
 
-    console.log("rate", rate)
-    console.log("ratee", new BN(rate))
-
     const ix = addToWhitelist(
       { rewardRate: rate, whitelistType },
       {

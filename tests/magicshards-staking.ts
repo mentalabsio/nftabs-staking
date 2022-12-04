@@ -88,6 +88,8 @@ describe("staking-program", () => {
 
   console.log("farmAuthority", farmAuthority.publicKey.toString());
 
+  const whitelistRewardRate = 0.005787037037037037;
+
   before(async () => {
     // Create new fungible token and mint to farmAuthority.
     const { mint } = await createFungibleToken(connection, farmAuthority);
@@ -163,7 +165,12 @@ describe("staking-program", () => {
     const { ix } = await stakingClient.createFundRewardInstruction({
       farm,
       authority: farmAuthority.publicKey,
-      amount: 100_000e9,
+      amount: 100e2,
+    });
+
+    const farmVault = await anchor.utils.token.associatedAddress({
+      mint: rewardMint,
+      owner: farm,
     });
 
     const txid = await send(connection, [ix], [farmAuthority]);
@@ -191,7 +198,7 @@ describe("staking-program", () => {
         creatorOrMint: creatorAddress,
         authority: farmAuthority.publicKey,
         farm,
-        rewardRate: { tokenAmount: 100, intervalInSeconds: 1 },
+        rewardRate: { tokenAmount: whitelistRewardRate, intervalInSeconds: 1 },
         whitelistType: new WhitelistType.Creator(),
       });
 
@@ -216,7 +223,7 @@ describe("staking-program", () => {
       creatorAddress.toString()
     );
     expect(whitelistProofAccount.ty.kind).to.equal("Creator");
-    expect(whitelistProofAccount.rewardRate).to.equal(100);
+    expect(whitelistProofAccount.rewardRate).to.equal(whitelistRewardRate);
   });
 
   it("should be able to whitelist a mint address", async () => {
@@ -299,14 +306,15 @@ describe("staking-program", () => {
       args: { amount: new BN(1), tripEffect },
     });
 
-    await send(connection, [ix], [userWallet]);
+    const txid = await send(connection, [ix], [userWallet]);
 
     const farmer = findFarmerAddress({ farm, owner: userWallet.publicKey });
 
     const farmerAccount = await Farmer.fetch(connection, farmer);
     const { reward } = await Farm.fetch(connection, farm);
 
-    const expectedRewardRate = Math.floor(100 * (1 + lock.bonusFactor / 100));
+    const expectedRewardRate =
+      whitelistRewardRate * (1 + lock.bonusFactor / 100);
     const expectedReservedReward =
       expectedRewardRate * lock.duration.toNumber();
 
@@ -346,7 +354,7 @@ describe("staking-program", () => {
 
     const farmerAccount2 = await Farmer.fetch(connection, farmer);
 
-    expect(farmerAccount2.totalRewardRate).to.equal(400);
+    expect(farmerAccount2.totalRewardRate).to.equal(whitelistRewardRate * 4);
   });
 
   it("should be able to debuff a pair", async () => {
@@ -373,7 +381,7 @@ describe("staking-program", () => {
     const farmer = findFarmerAddress({ farm, owner: userWallet.publicKey });
     const farmerAccount = await Farmer.fetch(connection, farmer);
 
-    expect(farmerAccount.totalRewardRate).to.equal(100);
+    expect(farmerAccount.totalRewardRate).to.equal(whitelistRewardRate);
   });
 
   it("should be able to unstake an NFT", async () => {
@@ -421,13 +429,13 @@ describe("staking-program", () => {
       mint: rewardMint,
       lock: lock.address,
       owner: userWallet.publicKey,
-      args: { amount: new BN(5e8), tripEffect: "None" },
+      args: { amount: new BN(5e2), tripEffect: "None" },
     });
 
     await send(connection, [ix], [userWallet]);
 
     const { totalRewardRate } = await Farmer.fetch(connection, farmer);
-    const expectedRewardRate = 5e8 * Math.floor(1 + lock.bonusFactor / 100);
+    const expectedRewardRate = 5e2 * Math.floor(1 + lock.bonusFactor / 100);
 
     expect(totalRewardRate).to.eql(expectedRewardRate);
   });
@@ -447,7 +455,7 @@ describe("staking-program", () => {
         mint: rewardMint,
         lock: lock.address,
         owner: userWallet.publicKey,
-        args: { amount: new BN(5e8), tripEffect: "None" },
+        args: { amount: new BN(5e2), tripEffect: "None" },
       });
 
       await send(connection, [ix], [userWallet]);
@@ -521,7 +529,7 @@ describe("staking-program", () => {
       authority: userWallet.publicKey,
     });
 
-    await send(connection, [ix], [userWallet]);
+    const txid = await send(connection, [ix], [userWallet]);
 
     const farmer = findFarmerAddress({ farm, owner: userWallet.publicKey });
     const farmerAccount = await Farmer.fetch(connection, farmer);
@@ -540,7 +548,7 @@ const createFungibleToken = async (
   );
 
   const mintAuthority = payer.publicKey;
-  const mint = await createMint(connection, payer, mintAuthority, null, 9);
+  const mint = await createMint(connection, payer, mintAuthority, null, 2);
 
   const associatedAccount = await getOrCreateAssociatedTokenAccount(
     connection,
@@ -555,7 +563,7 @@ const createFungibleToken = async (
     mint,
     associatedAccount.address,
     mintAuthority,
-    1_000_000e9
+    1_000_000e2
   );
 
   return { mint };
@@ -587,6 +595,6 @@ const transferToken = async (
     source.address,
     destination.address,
     sender,
-    100_000e9
+    100_000e2
   );
 };
