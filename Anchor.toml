@@ -2,17 +2,17 @@
 seeds = false
 
 [programs.localnet]
-magicshards_staking = "6es4jWC7maTU9ws2c6QRCmXyVYKM5YRj2dFwQCHGyNii"
+magicshards_staking = "EW8MwzvkECyxJ5Vz568ayTZ4g2CAGFcML8nZtksjfib3"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "devnet"
-wallet = "~/.config/solana/anchor.json"
+cluster = "mainnet"
+wallet = "~/.config/solana/mainnet_ms.json"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/particles-mainnet.ts"
 gen = "anchor-client-gen target/idl/magicshards_staking.json app/lib/gen"
 
 [test.validator]
@@ -68,4 +68,3 @@ address = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
 # Token metadata program
 [[test.validator.clone]]
 address = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
-
