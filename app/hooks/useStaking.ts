@@ -13,7 +13,7 @@ import { Lock } from "lib/gen/accounts/Lock"
 import { fromTxError } from "lib/gen/errors"
 
 export const farmAuthorityPubKey = new web3.PublicKey(
-  "Gr99FeMTbebT5mc41s6qkosmDvZtTMXa9cbNm9urpZdY"
+  "3hBWdLsxogSitaU7q2xzCtWvDVcA7G63HomM2zU3Tjo3"
 )
 
 export const rewardMint = new web3.PublicKey(
