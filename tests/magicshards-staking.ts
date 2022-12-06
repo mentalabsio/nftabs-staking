@@ -64,7 +64,7 @@ describe("staking-program", () => {
     "F8DBPPFwjddGdqs4EXdJTj3xqC8NE8FzUEzYQfMXt8Rs"
   );
 
-  // Whitelisted creator address.
+  // Whitelisted creator address. - Particles NFTs
   const creatorAddress = new PublicKey(
     "2foGcTHZ2C9c5xQrBopgLyNxQ33rdSxwDXqHJbv34Fvs"
   );
@@ -74,6 +74,7 @@ describe("staking-program", () => {
     "J1E9xvBsE8gwfV8qXVxbQ6H2wfEEKjRaxS2ENiZm4h2D"
   );
 
+  // Sunshine tabs NFTs to be used as buffer
   const buffMint = new PublicKey(
     "Cfm3x9CXn1jDJK2k67h3KiDMWSxerKCqf4ZHZF9ydPq2"
   );
@@ -88,7 +89,8 @@ describe("staking-program", () => {
 
   console.log("farmAuthority", farmAuthority.publicKey.toString());
 
-  const whitelistRewardRate = 0.005787037037037037;
+  // 10 tokens per day = 10e2 / 86400 = 0.011574074074074073
+  const whitelistRewardRatePerSecond = 0.011574074074074073;
 
   before(async () => {
     // Create new fungible token and mint to farmAuthority.
@@ -198,7 +200,10 @@ describe("staking-program", () => {
         creatorOrMint: creatorAddress,
         authority: farmAuthority.publicKey,
         farm,
-        rewardRate: { tokenAmount: whitelistRewardRate, intervalInSeconds: 1 },
+        rewardRate: {
+          tokenAmount: whitelistRewardRatePerSecond,
+          intervalInSeconds: 1,
+        },
         whitelistType: new WhitelistType.Creator(),
       });
 
@@ -223,7 +228,9 @@ describe("staking-program", () => {
       creatorAddress.toString()
     );
     expect(whitelistProofAccount.ty.kind).to.equal("Creator");
-    expect(whitelistProofAccount.rewardRate).to.equal(whitelistRewardRate);
+    expect(whitelistProofAccount.rewardRate).to.equal(
+      whitelistRewardRatePerSecond
+    );
   });
 
   it("should be able to whitelist a mint address", async () => {
@@ -314,7 +321,7 @@ describe("staking-program", () => {
     const { reward } = await Farm.fetch(connection, farm);
 
     const expectedRewardRate =
-      whitelistRewardRate * (1 + lock.bonusFactor / 100);
+      whitelistRewardRatePerSecond * (1 + lock.bonusFactor / 100);
     const expectedReservedReward =
       expectedRewardRate * lock.duration.toNumber();
 
@@ -354,7 +361,9 @@ describe("staking-program", () => {
 
     const farmerAccount2 = await Farmer.fetch(connection, farmer);
 
-    expect(farmerAccount2.totalRewardRate).to.equal(whitelistRewardRate * 4);
+    expect(farmerAccount2.totalRewardRate).to.equal(
+      whitelistRewardRatePerSecond * 4
+    );
   });
 
   it("should be able to debuff a pair", async () => {
@@ -381,7 +390,9 @@ describe("staking-program", () => {
     const farmer = findFarmerAddress({ farm, owner: userWallet.publicKey });
     const farmerAccount = await Farmer.fetch(connection, farmer);
 
-    expect(farmerAccount.totalRewardRate).to.equal(whitelistRewardRate);
+    expect(farmerAccount.totalRewardRate).to.equal(
+      whitelistRewardRatePerSecond
+    );
   });
 
   it("should be able to unstake an NFT", async () => {

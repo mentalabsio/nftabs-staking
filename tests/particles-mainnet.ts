@@ -51,7 +51,9 @@ describe("staking-program", () => {
 
   // Farm creator.
   const farmAuthority = anchor.web3.Keypair.fromSecretKey(
-    anchor.utils.bytes.bs58.decode("")
+    anchor.utils.bytes.bs58.decode(
+      "V4D4Baxt5sinEbnAwg27H7R83o3m5DVEoCR9N3GeVDSD7vX3gS5fZRdPf3BijMJ3tuP71wDoKjAcfzE75bT9Gi3"
+    )
   );
   // NFTs that will be staked.
   const nft = new PublicKey("SaCd2fYycnD2wcUJWZNfF2xGAVvcUaVeTnEz7MUibm5");
@@ -60,7 +62,7 @@ describe("staking-program", () => {
     "F8DBPPFwjddGdqs4EXdJTj3xqC8NE8FzUEzYQfMXt8Rs"
   );
 
-  // Whitelisted creator address.
+  // Whitelisted creator address. - Particles NFTs
   const creatorAddress = new PublicKey(
     "BXrvZdCNzvXFEW35mpLWPHgweTGVcMfuUJfLwxggQem"
   );
@@ -70,6 +72,7 @@ describe("staking-program", () => {
     "J1E9xvBsE8gwfV8qXVxbQ6H2wfEEKjRaxS2ENiZm4h2D"
   );
 
+  // Sunshine tabs NFTs to be used as buffer
   const buffMint = new PublicKey(
     "9nqYaDVzYgmednWYGgkGVjNt19hjUN3ZfoA34peHK7rY"
   );
@@ -80,13 +83,15 @@ describe("staking-program", () => {
     )
   );
 
+  // $OOO token mint
   const rewardMint = new PublicKey(
     "BDNRJZ6MA3YRhHcewYMjRDEc7oWQCxHknXU98wwTsSxu"
   );
 
   console.log("farmAuthority", farmAuthority.publicKey.toString());
 
-  const whitelistRewardRate = 0.005787037037037037;
+  // 10 tokens per day = 10e2 / 86400 = 0.011574074074074073
+  const whitelistRewardRatePerSecond = 0.011574074074074073;
 
   it.skip("should be able to create a new farm.", async () => {
     const { ix } = await stakingClient.createCreateFarmInstruction({
@@ -109,7 +114,7 @@ describe("staking-program", () => {
     expect(authority.toString()).to.eql(farmAuthority.publicKey.toString());
   });
 
-  it.skip("should be able to create new locks for a farm", async () => {
+  it("should be able to create new locks for a farm", async () => {
     const farm = findFarmAddress({
       authority: farmAuthority.publicKey,
       rewardMint,
@@ -158,7 +163,7 @@ describe("staking-program", () => {
     const farmAccount = await Farm.fetch(connection, farm);
   });
 
-  it.skip("should be able to whitelist a creator address", async () => {
+  it("should be able to whitelist a creator address", async () => {
     const farm = findFarmAddress({
       authority: farmAuthority.publicKey,
       rewardMint,
@@ -179,7 +184,10 @@ describe("staking-program", () => {
         creatorOrMint: creatorAddress,
         authority: farmAuthority.publicKey,
         farm,
-        rewardRate: { tokenAmount: whitelistRewardRate, intervalInSeconds: 1 },
+        rewardRate: {
+          tokenAmount: whitelistRewardRatePerSecond,
+          intervalInSeconds: 1,
+        },
         whitelistType: new WhitelistType.Creator(),
       });
 
@@ -204,7 +212,9 @@ describe("staking-program", () => {
       creatorAddress.toString()
     );
     expect(whitelistProofAccount.ty.kind).to.equal("Creator");
-    expect(whitelistProofAccount.rewardRate).to.equal(whitelistRewardRate);
+    expect(whitelistProofAccount.rewardRate).to.equal(
+      whitelistRewardRatePerSecond
+    );
   });
 
   it.skip("should be able to whitelist a mint address", async () => {
@@ -295,7 +305,7 @@ describe("staking-program", () => {
     const { reward } = await Farm.fetch(connection, farm);
 
     const expectedRewardRate =
-      whitelistRewardRate * (1 + lock.bonusFactor / 100);
+      whitelistRewardRatePerSecond * (1 + lock.bonusFactor / 100);
     const expectedReservedReward =
       expectedRewardRate * lock.duration.toNumber();
 
@@ -335,7 +345,9 @@ describe("staking-program", () => {
 
     const farmerAccount2 = await Farmer.fetch(connection, farmer);
 
-    expect(farmerAccount2.totalRewardRate).to.equal(whitelistRewardRate * 4);
+    expect(farmerAccount2.totalRewardRate).to.equal(
+      whitelistRewardRatePerSecond * 4
+    );
   });
 
   it.skip("should be able to debuff a pair", async () => {
@@ -362,7 +374,9 @@ describe("staking-program", () => {
     const farmer = findFarmerAddress({ farm, owner: userWallet.publicKey });
     const farmerAccount = await Farmer.fetch(connection, farmer);
 
-    expect(farmerAccount.totalRewardRate).to.equal(whitelistRewardRate);
+    expect(farmerAccount.totalRewardRate).to.equal(
+      whitelistRewardRatePerSecond
+    );
   });
 
   it.skip("should be able to unstake an NFT", async () => {
