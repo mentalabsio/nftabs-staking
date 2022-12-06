@@ -205,15 +205,15 @@ const useStaking = () => {
             externalMetadata: { attributes },
           } = NFT
 
-          const tripEffectAttribute = attributes.find((attribute) => {
+          let tripEffectAttributeValue = attributes.find((attribute) => {
             return attribute.trait_type === "Trip Effect"
-          })
+          })?.value
 
           const isParticle =
             NFT.onchainMetadata.data.creators[0].address.toString() ===
             "BXrvZdCNzvXFEW35mpLWPHgweTGVcMfuUJfLwxggQem"
 
-          if (!tripEffectAttribute && !isParticle) {
+          if (!tripEffectAttributeValue && !isParticle) {
             throw new Error("Can't stake. There is no Trip Effect attribute.")
           }
 
@@ -226,6 +226,20 @@ const useStaking = () => {
 
           if (!isTrippedOut && !isParticle) {
             throw new Error("Can't stake. NFT is NOT Tripped Out.")
+          }
+
+          if (isParticle) {
+            // Workaround to give bonus emission to "Space" background attribute
+            const isSpace = attributes.find((attribute) => {
+              return (
+                attribute.trait_type === "Background" &&
+                attribute.value === "Space"
+              )
+            })
+
+            if (isSpace) {
+              tripEffectAttributeValue = "Space"
+            }
           }
 
           const { ix } = await stakingClient.createStakeInstruction({
@@ -247,7 +261,7 @@ const useStaking = () => {
              */
             args: {
               amount: new BN(1),
-              tripEffect: isParticle ? "None" : tripEffectAttribute.value,
+              tripEffect: tripEffectAttributeValue || "None",
             },
           })
 

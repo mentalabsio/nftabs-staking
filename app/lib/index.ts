@@ -62,6 +62,7 @@ export const StakingProgram = (connection: Connection) => {
     "3x": 2,
     "4x": 3,
     Nirvana: 4,
+    Space: 5,
   }
 
   const createCreateFarmInstruction = async ({
@@ -307,6 +308,7 @@ export const StakingProgram = (connection: Connection) => {
 
     const stakeReceipt = findStakeReceiptAddress({ farmer, mint })
 
+    console.log("level", tripMap[args.tripEffect])
     const ix = stake(
       { amount: args.amount, level: tripMap[args.tripEffect] },
       {

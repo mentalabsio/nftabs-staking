@@ -15,6 +15,7 @@ export type TripEffect =
   | "3x"
   | "4x"
   | "Nirvana"
+  | "Space"
 
 export type TripMap = {
   [K in TripEffect]: number
