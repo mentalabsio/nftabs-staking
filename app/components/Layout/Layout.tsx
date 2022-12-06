@@ -49,7 +49,7 @@ const Layout = (props: Props) => {
       <Container>
         <Header />
       </Container>
-      {/* {totalStaked ? (
+      {totalStaked ? (
         <Flex
           title={totalStaked + ` staked`}
           sx={{
@@ -91,12 +91,12 @@ const Layout = (props: Props) => {
               width: `${Number(percentage) > 100 ? 0 : 100 - percentage}%`,
               height: "100%",
               zIndex: -1,
-                opacity: 0.2,
+              opacity: 0.2,
               background: (props) => "gray",
             }}
           />
         </Flex>
-      ) : null} */}
+      ) : null}
 
       <Container>{children}</Container>
     </>
