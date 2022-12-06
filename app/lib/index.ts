@@ -54,14 +54,14 @@ export const StakingProgram = (connection: Connection) => {
 
   const tripMap: TripMap = {
     None: 0,
-    Drip: 1,
-    Groovy: 1,
-    Geometric: 1,
-    Interdimensional: 1,
-    "2x": 2,
-    "3x": 3,
-    "4x": 4,
-    Nirvana: 5,
+    Drip: 0,
+    Groovy: 0,
+    Geometric: 0,
+    Interdimensional: 0,
+    "2x": 1,
+    "3x": 2,
+    "4x": 3,
+    Nirvana: 4,
   }
 
   const createCreateFarmInstruction = async ({

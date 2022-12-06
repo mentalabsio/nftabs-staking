@@ -161,7 +161,7 @@ fn tokens_per_second(amount: u64, decimals: u32) -> Result<u64> {
 
 /// Converts a level to a reward_rate (tokens/sec).
 fn level_emission(level: u8, decimals: u32) -> Result<u64> {
-  let emissions = [0, 5, 11, 17, 24, 32];
+  let emissions = [0, 2, 3, 4, 6];
   let emission = emissions.get(level as usize).ok_or(StakingError::InvalidTripEffect)?;
 
   tokens_per_second(*emission, decimals)
