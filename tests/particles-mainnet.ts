@@ -114,7 +114,7 @@ describe("staking-program", () => {
     expect(authority.toString()).to.eql(farmAuthority.publicKey.toString());
   });
 
-  it("should be able to create new locks for a farm", async () => {
+  it.skip("should be able to create new locks for a farm", async () => {
     const farm = findFarmAddress({
       authority: farmAuthority.publicKey,
       rewardMint,
@@ -142,7 +142,7 @@ describe("staking-program", () => {
     expect(locks.every((lock) => lock.farm === farm.toBase58())).to.be.true;
   });
 
-  it("should be able to fund a farm's rewards", async () => {
+  it.skip("should be able to fund a farm's rewards", async () => {
     const farm = findFarmAddress({
       authority: farmAuthority.publicKey,
       rewardMint: rewardMint,
@@ -191,9 +191,24 @@ describe("staking-program", () => {
         whitelistType: new WhitelistType.Creator(),
       });
 
+    const whitelistNFTabs = await stakingClient.createAddToWhitelistInstruction(
+      {
+        creatorOrMint: new anchor.web3.PublicKey(
+          "AFW3EJSbVep5uG643Qk7JLyRR2W5PVK39ECZrKBzkBP3"
+        ),
+        authority: farmAuthority.publicKey,
+        farm,
+        rewardRate: {
+          tokenAmount: 0,
+          intervalInSeconds: 1,
+        },
+        whitelistType: new WhitelistType.Creator(),
+      }
+    );
+
     await send(
       connection,
-      [/** whitelistBuff.ix */ whitelistCreator.ix],
+      [/** whitelistBuff.ix */ whitelistCreator.ix, whitelistNFTabs.ix],
       [farmAuthority]
     );
 
